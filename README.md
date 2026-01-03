@@ -114,6 +114,50 @@ Features:
 **Purpose**: Maintains a comprehensive record of your open-source involvement and contributions.
 
 ---
+## Project Structure
+
+The project follows a modular structure, grouping related files by responsibility to keep the codebase organized and easy to maintain.
+
+xaytheon/
+│
+├── .github/                 # GitHub configs (issues, workflows)
+│
+├── assets/                  # Static assets
+│   ├── images/
+│   ├── icons/
+│
+├── pages/                   # HTML pages
+│   ├── index.html
+│   ├── login.html
+│   ├── github.html
+│   ├── community.html
+│   ├── explore.html
+│   └── contributions.html
+│
+├── js/                      # JavaScript logic
+│   ├── auth.js
+│   ├── script.js
+│   ├── github.js
+│   ├── community.js
+│   ├── explore.js
+│   └── contributions.js
+│
+├── css/                     # Stylesheets
+│   └── style.css
+│
+├── config/                  # Configuration & metadata
+│   ├── GithubAPI_info
+│   └── supabase.sql
+│
+├── docs/                    # Documentation
+│   ├── CONTRIBUTION.md
+│   └── windows_setup_guide.md
+│
+├── LICENSE.md               # License
+├── SECURITY.md              # Security policy
+├── README.md                # Project overview
+└── package.json (if added later)
+
 
 ## Technical Capabilities
 
