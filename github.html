@@ -54,9 +54,11 @@
           </div>
 
           <form id="github-form" class="github-form" autocomplete="off">
+            <div id="gh-error" class="muted"></div>
+
             <div class="field-group" style="grid-column: span 6;">
               <label for="gh-username">Username</label>
-              <input id="gh-username" name="username" type="text" placeholder="e.g. octocat" required />
+              <input id="gh-username" name="username" type="text" placeholder="e.g. octocat"  />
             </div>
             <button class="btn btn-primary" type="submit">Load Dashboard</button>
             <button class="btn btn-outline" type="button" id="gh-clear">Clear</button>

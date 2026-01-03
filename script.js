@@ -627,9 +627,19 @@ function initGithubDashboard() {
   const form = document.getElementById("github-form");
   if (!form) return; // section not present
 
+
   const usernameInput = document.getElementById("gh-username");
   const clearBtn = document.getElementById("gh-clear");
   const status = document.getElementById("github-status");
+
+    const usernameInput = document.getElementById('gh-username');
+    const clearBtn = document.getElementById('gh-clear');
+    const status = document.getElementById('github-status');
+    usernameInput.addEventListener('input', () => {
+    setStatus('');
+});
+
+
 
   // Restore saved creds
   try {
@@ -1242,3 +1252,4 @@ window.addEventListener("resize", () => {
     }
   }
 });
+
