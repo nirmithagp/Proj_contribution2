@@ -61,9 +61,20 @@ function init() {
     setupEventListeners();
     
     // Hide loading screen
-    setTimeout(() => {
-        document.getElementById('loading-screen').classList.add('hidden');
-    }, 1000);
+    // and announce completion
+setTimeout(() => {
+    const loader = document.getElementById('loading-screen');
+    loader.classList.add('hidden');
+
+    // Screen reader announcement
+    const doneMsg = document.createElement('div');
+    doneMsg.setAttribute('role', 'status');
+    doneMsg.setAttribute('aria-live', 'polite');
+    doneMsg.classList.add('sr-only'); // visually hidden
+    doneMsg.textContent = 'XAYTHEON has finished loading.';
+    document.body.appendChild(doneMsg);
+}, 1000);
+
     
     // Start animation loop
     animate();
