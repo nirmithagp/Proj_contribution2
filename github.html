@@ -1,168 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GitHub Dashboard — XAYTHEON</title>
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css" />
-  <!-- Supabase SDK & auth bootstrap -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
-  <script defer src="auth.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub Dashboard — XAYTHEON</title>
+
+    <!-- Supabase SDK & auth bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
+    <script defer src="auth.js"></script>
+    <script>
+        const theme = localStorage.getItem("theme")
+        if (theme) {
+          document.documentElement.setAttribute("data-theme", theme)
+        }
+    </script>
+    <!--Styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .section-title{
+         font-family:VT323;
+ font-size:60px;
+ position:relative;
+ top:10vh;
+ left:25vw;
+         }
+ .navbar {
+   background-color: #000;
+ }
+
+ .navbar a,
+ .navbar .theme-toggle {
+   color: #fff;
+ }
+ .navbar .theme-toggle svg {
+   stroke: #fff;
+ }
+ .navbar .logo-img {
+   filter: brightness(0) invert(1);
+ }
+
+ #gh-username::placeholder {
+   color: rgba(0, 0, 0, 0.6);
+ }
+
+ #gh-username:focus {
+   border-color: rgba(0, 0, 0, 0.6);
+   box-shadow:
+     0 0 0 3px rgba(0, 0, 0, 0.1),
+     0 12px 28px rgba(0, 0, 0, 0.12);
+ }
+ #gh-username {
+   background: rgba(99, 102, 241, 0.12); /* accent tint */
+   backdrop-filter: blur(14px);
+   -webkit-backdrop-filter: blur(14px);
+
+   border: 1px solid rgba(99, 102, 241, 0.25);
+   border-radius: 14px;
+
+   color: #000;
+ }
+
+ /* =========================
+    PROFILE CARD ANIMATION
+    ========================= */
+
+ .profile-card {
+   position: relative;
+   overflow: hidden;
+ }
+
+ /* --- Base layout (before hover) --- */
+ .profile-row {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   text-align: center;
+   gap: 10px;
+
+   transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+   will-change: transform;
+ }
+
+ /* Avatar */
+ .avatar {
+   width: 96px;
+   height: 96px;
+   border-radius: 50%;
+   object-fit: cover;
+
+   transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+   will-change: transform;
+ }
+
+ /* Hide secondary text initially */
+ .profile-login,
+ .profile-bio {
+   opacity: 0;
+   transform: translateY(6px);
+
+   transition:
+     opacity 0.45s ease 0.15s,
+     transform 0.45s ease 0.15s;
+
+   will-change: opacity, transform;
+ }
+
+ /* Stats hidden & removed from flow */
+ .profile-stats {
+   position: absolute;
+   bottom: 20px;
+   left: 50%;
+   transform: translate(-50%, 20px);
+   opacity: 0;
+
+   display: flex;
+   gap: 28px;
+
+   transition:
+     opacity 0.6s ease 0.2s,
+     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+
+   will-change: opacity, transform;
+ }
+
+ /* =========================
+    HOVER STATE
+    ========================= */
+
+ .profile-card:hover .profile-row {
+   flex-direction: row;
+   align-items: center;
+   text-align: left;
+   transform: translateX(-40px);
+ }
+
+ .profile-card:hover .avatar {
+   transform: scale(0.6);
+ }
+
+ .profile-card:hover .profile-login,
+ .profile-card:hover .profile-bio {
+   opacity: 1;
+   transform: translateY(0);
+ }
+
+ .profile-card:hover .profile-stats {
+   opacity: 1;
+   transform: translate(-50%, 0);
+ }
+
+    </style>
 </head>
 <body class="eightgon-page">
-  <div class="page-wrapper">
+<div class="page-wrapper">
 
     <nav class="navbar">
-      <div class="nav-container">
-        <a class="logo" href="index.html" aria-label="Back to Home">
-          <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo" />
-        </a>
-        <ul class="nav-menu">
-          <li><a class="nav-link" href="index.html#home">Home</a></li>
-          <li><a class="nav-link" href="community.html">Community Highlights</a></li>
-          <li><a class="nav-link" href="explore.html">Explore by Topic</a></li>
-          <li><a class="nav-link" href="contributions.html">Contributions</a></li>
-          <li>
-            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-              <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/>
-                <line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-              </svg>
-            </button>
-          </li>
-          <li id="auth-area"></li>
-        </ul>
-      </div>
+        <div class="nav-container">
+            <a class="logo" href="index.html" aria-label="Back to Home">
+                <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo" />
+            </a>
+            <ul class="nav-menu">
+                <li><a class="nav-link" href="index.html#home">Home</a></li>
+                <li><a class="nav-link" href="community.html">Community Highlights</a></li>
+                <li><a class="nav-link" href="explore.html">Explore by Topic</a></li>
+                <li><a class="nav-link" href="contributions.html">Contributions</a></li>
+                <li>
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" style="color:#fff">
+                        <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </button>
+                </li>
+                <li id="auth-area"></li>
+            </ul>
+        </div>
     </nav>
 
     <main>
-      <section id="github" class="github-section">
-        <div class="container">
-          <div class="github-header">
-            <h2 class="section-title">GitHub Dashboard</h2>
-            <div class="mini-3d" aria-hidden="true">
-              <canvas id="mini-3d-canvas"></canvas>
-              <div class="mini-3d-loading">Loading…</div>
-            </div>
-          </div>
-
-          <form id="github-form" class="github-form" autocomplete="off">
-            <div id="gh-error" class="muted"></div>
-            
-            <!-- Rate Limit Info Box -->
-            <div id="gh-rate-limit-warning" style="display: none; padding: 12px; margin-bottom: 16px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; color: #92400e;">
-              <strong>⚠️ Rate Limit Notice:</strong>
-              <span id="gh-rate-limit-message">GitHub API has request limits. Data is cached for 10 minutes to optimize usage.</span>
-            </div>
-
-            <div class="field-group" style="grid-column: span 6;">
-              <label for="gh-username">Username</label>
-              <input id="gh-username" name="username" type="text" placeholder="e.g. octocat"  />
-            </div>
-            <button class="btn btn-primary" type="submit">Load Dashboard</button>
-            <button class="btn btn-outline" type="button" id="gh-clear">Clear Cache & Data</button>
-            <div id="github-status" class="github-status" aria-live="polite"></div>
-          </form>
-
-          <div class="github-grid">
-            <div class="card profile-card" id="gh-profile">
-              <div class="card-header">
-                <h3>Profile</h3>
-              </div>
-              <div class="card-body">
-                <div class="profile-row">
-                  <img id="gh-avatar" alt="Avatar" class="avatar" />
-                  <div>
-                    <div class="profile-name" id="gh-name">—</div>
-                    <div class="profile-login" id="gh-login">—</div>
-                    <div class="profile-bio" id="gh-bio"></div>
-                  </div>
+        <section id="github" class="github-section">
+            <div class="container">
+                <div class="github-header">
+                    <h2 class="section-title">GitHub Dashboard</h2>
+                    <div class="mini-3d" aria-hidden="true">
+                        <canvas id="mini-3d-canvas"></canvas>
+                        <div class="mini-3d-loading">Loading…</div>
+                    </div>
                 </div>
-                <div class="profile-stats">
-                  <div><span id="gh-followers">0</span><label>Followers</label></div>
-                  <div><span id="gh-following">0</span><label>Following</label></div>
-                  <div><span id="gh-repos-count">0</span><label>Repos</label></div>
+
+                <form id="github-form" class="github-form" autocomplete="off">
+                    <div id="gh-error" class="muted"></div>
+
+                    <!-- Rate Limit Info Box -->
+                    <div id="gh-rate-limit-warning" style="display: none; padding: 12px; margin-bottom: 16px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; color: #92400e;">
+                        <strong>⚠️ Rate Limit Notice:</strong>
+                        <span id="gh-rate-limit-message">GitHub API has request limits. Data is cached for 10 minutes to optimize usage.</span>
+                    </div>
+
+                    <div class="field-group" style="grid-column: span 6;">
+                        <label for="gh-username">Username</label>
+                        <input id="gh-username" name="username" type="text" placeholder="e.g. octocat"  />
+                    </div>
+                    <button class="btn btn-primary" type="submit">Load Dashboard</button>
+                    <button class="btn btn-outline" type="button" id="gh-clear">Clear Cache & Data</button>
+                    <div id="github-status" class="github-status" aria-live="polite"></div>
+                </form>
+
+                <div class="github-grid">
+                    <div class="card profile-card" id="gh-profile">
+                        <div class="card-header">
+                            <h3>Profile</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="profile-row">
+                                <img id="gh-avatar" alt="Avatar" class="avatar" />
+                                <div>
+                                    <div class="profile-name" id="gh-name">—</div>
+                                    <div class="profile-login" id="gh-login">—</div>
+                                    <div class="profile-bio" id="gh-bio"></div>
+                                </div>
+                            </div>
+                            <div class="profile-stats">
+                                <div><span id="gh-followers">0</span><label>Followers</label></div>
+                                <div><span id="gh-following">0</span><label>Following</label></div>
+                                <div><span id="gh-repos-count">0</span><label>Repos</label></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card contributions-card" id="gh-contributions">
+                        <div class="card-header">
+                            <h3>Contributions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="gh-contrib-note" class="muted">Public contributions chart is shown below. If it’s unavailable, we’ll render an approximate heatmap from recent public activity.</div>
+                            <div id="gh-contrib-svg" class="contrib-svg" role="img" aria-label="Contributions calendar"></div>
+                        </div>
+                    </div>
+
+                    <div class="card repos-card" id="gh-repos" data-requires-auth style="display:none;">
+                        <div class="card-header">
+                            <h3>Top Repositories</h3>
+                            <div class="muted small">Sorted by stars</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="gh-repo-list" class="repo-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="card activity-card" id="gh-activity" data-requires-auth style="display:none;">
+                        <div class="card-header">
+                            <h3>Recent Activity</h3>
+                            <div class="muted small">Public events</div>
+                        </div>
+                        <div class="card-body">
+                            <ul id="gh-activity-list" class="activity-list"></ul>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
 
-            <div class="card contributions-card" id="gh-contributions">
-              <div class="card-header">
-                <h3>Contributions</h3>
-              </div>
-              <div class="card-body">
-                <div id="gh-contrib-note" class="muted">Public contributions chart is shown below. If it’s unavailable, we’ll render an approximate heatmap from recent public activity.</div>
-                <div id="gh-contrib-svg" class="contrib-svg" role="img" aria-label="Contributions calendar"></div>
-              </div>
+            <div class="cursor-container">
+                <span class="cursor-dot"></span>
+                <span class="cursor-dot"></span>
+                <span class="cursor-dot"></span>
+                <span class="cursor-dot"></span>
+                <span class="cursor-dot"></span>
+                <span class="cursor-dot"></span>
+                <span class="cursor-dot"></span>
+                <span class="cursor-dot"></span>
             </div>
+</div>
+</section>
 
-            <div class="card repos-card" id="gh-repos" data-requires-auth style="display:none;">
-              <div class="card-header">
-                <h3>Top Repositories</h3>
-                <div class="muted small">Sorted by stars</div>
-              </div>
-              <div class="card-body">
-                <div id="gh-repo-list" class="repo-list"></div>
-              </div>
-            </div>
 
-            <div class="card activity-card" id="gh-activity" data-requires-auth style="display:none;">
-              <div class="card-header">
-                <h3>Recent Activity</h3>
-                <div class="muted small">Public events</div>
-              </div>
-              <div class="card-body">
-                <ul id="gh-activity-list" class="activity-list"></ul>
-              </div>
-            </div>
-          </div>
-        </div>
 
-    <div class="cursor-container">
-      <span class="cursor-dot"></span>
-      <span class="cursor-dot"></span>
-      <span class="cursor-dot"></span>
-      <span class="cursor-dot"></span>
-      <span class="cursor-dot"></span>
-      <span class="cursor-dot"></span>
-      <span class="cursor-dot"></span>
-      <span class="cursor-dot"></span>
-    </div>
-   </div>
-    </section>
-
-    
-    
-    <footer class="footer">
-      <div class="container">
+<footer class="footer">
+    <div class="container">
         <div class="footer-content">
-          <div class="footer-brand">
-            <span class="logo-text">XAYTHEON</span>
-            <p>Empowering the next generation of innovators</p>
-          </div>
+            <div class="footer-brand">
+                <span class="logo-text">XAYTHEON</span>
+                <p>Empowering the next generation of innovators</p>
+            </div>
         </div>
         <div class="footer-bottom">
-          <p>&copy; 2026 XAYTHEON. All rights reserved.</p>
+            <p>&copy; 2026 XAYTHEON. All rights reserved.</p>
         </div>
-      </div>
-    </footer>
-  </div>
+    </div>
+</footer>
+</div>
 
-  <!-- Contributions module -->
-  <script src="contributions.js"></script>
-  <!-- Three.js for mini viewer -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <!-- Auth & app scripts -->
-  <script src="script.js"></script>
+<!-- Contributions module -->
+<script src="contributions.js"></script>
+<!-- Three.js for mini viewer -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<!-- Auth & app scripts -->
+<script src="script.js"></script>
+<script>
+    const toggleBtn = document.getElementById("theme-toggle")
+    const root = document.documentElement
+
+    const savedTheme = localStorage.getItem("theme")
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+
+    if (savedTheme) {
+      root.setAttribute("data-theme", savedTheme)
+    } else if (systemDark) {
+      root.setAttribute("data-theme", "dark")
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      const current = root.getAttribute("data-theme")
+      const next = current === "dark" ? "light" : "dark"
+
+      root.setAttribute("data-theme", next)
+      localStorage.setItem("theme", next)
+    })
+</script>
 </body>
 </html>
 
