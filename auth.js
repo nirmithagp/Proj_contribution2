@@ -48,12 +48,25 @@ try {
   let refreshTimer = null;
   let lastAuthError = null;
 
+  function isTokenExpired() {
+  if (!tokenExpiryTime) return true;
+  return Date.now() >= tokenExpiryTime;
+}
+
+
   function setAccessToken(token, expiresIn, user) {
-    accessToken = token;
-    currentUser = user || null;
-    tokenExpiryTime = Date.now() + (expiresIn - 60) * 1000;
-    lastAuthError = null; // Clear error on success
-    scheduleTokenRefresh();
+  accessToken = token;
+  currentUser = user || null;
+
+  // Store expiry timestamp (in ms)
+  tokenExpiryTime = Date.now() + (expiresIn * 1000);
+
+  scheduleTokenRefresh();
+
+  window.dispatchEvent(
+    new CustomEvent("xaytheon:authchange", { detail: { user: currentUser } })
+  );
+}
 
     window.dispatchEvent(
       new CustomEvent("xaytheon:authchange", {
@@ -98,6 +111,9 @@ try {
     window.dispatchEvent(new CustomEvent('xaytheon:authchange', { detail: { user: null } }));
   }
 
+  function getAccessToken() {
+    return accessToken;
+  }
   async function refreshAccessToken() {
     try {
       const storedRefreshToken = localStorage.getItem("x_refresh_token");
@@ -131,21 +147,19 @@ try {
     } catch {
       clearAccessToken();
     } catch (err) {
-      console.warn("Session restore failed:", err);
-      lastAuthError = err.message; // Capture error for UI
+  console.warn("Session restore failed:", err);
 
-      if (!err.message.includes("Network")) {
-        if (err.message.includes("Invalid") || err.message.includes("expired") || err.message.includes("not found")) {
-          // Only clear if explicitly invalid, but keep error for display
-          accessToken = null;
-          currentUser = null;
-          localStorage.removeItem("x_refresh_token");
-        }
-      }
-      renderAuthArea(); // Update UI to show error
-      return false;
-    }
-  }
+  // Clear all auth data (logout user safely)
+  clearAccessToken();
+
+  // Notify UI that user is logged out
+ /* window.dispatchEvent(
+    new CustomEvent("xaytheon:authchange", { detail: { user: null } })
+  );*/
+
+  return false;
+}
+
 
   function scheduleTokenRefresh() {
     if (refreshTimer) clearTimeout(refreshTimer);
@@ -155,10 +169,14 @@ try {
   }
 
   async function authenticatedFetch(url, options = {}) {
-    if (isTokenExpiringSoon()) {
-      const ok = await refreshAccessToken();
-      if (!ok) throw { code: "SESSION_EXPIRED" };
+     if (isTokenExpired()) {
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      clearAccessToken();
+      throw { code: "SESSION_EXPIRED" };
     }
+  }
+
 
     const res = await fetchWithTimeout(url, {
       ...options,
@@ -183,10 +201,19 @@ try {
       });
 
       if (!res.ok) {
-        if (res.status === 401) throw { code: "INVALID_CREDENTIALS" };
-        if (res.status === 429) throw { code: "TOO_MANY_ATTEMPTS" };
-        if (res.status >= 500) throw { code: "SERVER_ERROR" };
-        throw { code: "AUTH_FAILED" };
+        let errorMessage = "Login failed";
+        try {
+          const err = await res.json();
+          errorMessage = err.message || errorMessage;
+        } catch {
+          // If we can't parse the error response, use status text
+          errorMessage = res.statusText || errorMessage;
+        }
+
+        // Handle specific HTTP status codes
+        
+
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -444,3 +471,29 @@ function getAuthErrorMessage(error) {
   };
 
 })();
+
+function getAuthErrorMessage(error) {
+  if (!error) {
+    return "Something went wrong. Please try again.";
+  }
+
+  // Network error
+  if (error.message === "Failed to fetch") {
+    return "Network error. Please check your internet connection.";
+  }
+
+  // Custom error codes
+  switch (error.code) {
+    case "INVALID_CREDENTIALS":
+      return "Invalid email or password.";
+    case "USER_EXISTS":
+      return "User already exists. Please log in.";
+    case "UNAUTHORIZED":
+      return "You are not authorized. Please login again.";
+    case "SESSION_EXPIRED":
+      return "Your session has expired. Please login again.";
+    default:
+      return error.message || "Authentication failed.";
+  }
+}
+
