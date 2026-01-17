@@ -44,10 +44,52 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load initial data
     if (currentUser) {
+        await loadPreferences();
         await loadAnalyticsData();
         initWebSocket(); // Initialize real-time updates
     }
 });
+
+/**
+ * Load user preferences for analytics
+ */
+async function loadPreferences() {
+    if (!window.XAYTHEON_AUTH) return;
+    const prefs = await window.XAYTHEON_AUTH.fetchPreferences();
+
+    if (prefs && prefs.analytics) {
+        const p = prefs.analytics;
+        if (p.starsChartType) document.getElementById('stars-chart-type').value = p.starsChartType;
+        if (p.followersChartType) document.getElementById('followers-chart-type').value = p.followersChartType;
+
+        // Table visibility
+        const tableContainer = document.getElementById('table-container');
+        if (p.showTable) {
+            tableContainer.style.display = 'block';
+        } else {
+            tableContainer.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Save analytics preference
+ */
+function saveAnalyticsPreference(key, value) {
+    if (!window.XAYTHEON_AUTH || !window.XAYTHEON_AUTH.isAuthenticated()) return;
+
+    // We need to fetch current prefs first to merge? 
+    // API implementation handles merge of `analytics` object keys if we send logic correctly.
+    // My controller implementation: newPrefs.analytics = { ...old, ...req.body.analytics }
+    // so I can just send the partial update.
+
+    const payload = {
+        analytics: {
+            [key]: value
+        }
+    };
+    window.XAYTHEON_AUTH.savePreferences(payload);
+}
 
 /**
  * Monitor network status
@@ -181,15 +223,21 @@ function setupEventListeners() {
     });
 
     // Table toggle
-    document.getElementById('toggle-table-btn').addEventListener('click', toggleTable);
+    document.getElementById('toggle-table-btn').addEventListener('click', () => {
+        toggleTable();
+        const container = document.getElementById('table-container');
+        saveAnalyticsPreference('showTable', container.style.display !== 'none');
+    });
 
     // Chart type selectors
     document.getElementById('stars-chart-type').addEventListener('change', (e) => {
         updateChartType('stars', e.target.value);
+        saveAnalyticsPreference('starsChartType', e.target.value);
     });
 
     document.getElementById('followers-chart-type').addEventListener('change', (e) => {
         updateChartType('followers', e.target.value);
+        saveAnalyticsPreference('followersChartType', e.target.value);
     });
 }
 

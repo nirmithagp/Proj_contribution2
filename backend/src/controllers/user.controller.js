@@ -86,3 +86,63 @@ exports.updateHistory = async (req, res) => {
     res.status(500).json({ message: "Failed to update history" });
   }
 };
+
+exports.getPreferences = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let preferences = {};
+    if (user.preferences) {
+      try {
+        preferences = JSON.parse(user.preferences);
+      } catch (err) {
+        console.warn("Invalid preferences JSON for user", req.userId, err);
+      }
+    }
+
+    res.json(preferences);
+  } catch (err) {
+    console.error("Get preferences error:", err);
+    res.status(500).json({ message: "Failed to fetch preferences" });
+  }
+};
+
+exports.updatePreferences = async (req, res) => {
+  try {
+    const { theme, analytics } = req.body;
+    let newPrefs = {};
+
+    // Fetch existing preferences to merge
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.preferences) {
+      try {
+        newPrefs = JSON.parse(user.preferences);
+      } catch (e) { }
+    }
+
+    // Merge/Verify fields
+    if (theme && (theme === 'light' || theme === 'dark')) {
+      newPrefs.theme = theme;
+    }
+
+    if (analytics && typeof analytics === 'object') {
+      // Allow partial updates to analytics object
+      newPrefs.analytics = { ... (newPrefs.analytics || {}), ...analytics };
+
+      // Sanitize specific keys if needed 
+      const allowedKeys = ['starsChartType', 'followersChartType', 'showTable'];
+      // For now, accept what's sent but could filter here
+    }
+
+    await User.updatePreferences(req.userId, JSON.stringify(newPrefs));
+    res.json({ message: "Preferences updated", preferences: newPrefs });
+  } catch (err) {
+    console.error("Update preferences error:", err);
+    res.status(500).json({ message: "Failed to update preferences" });
+  }
+};

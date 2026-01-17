@@ -1,6 +1,6 @@
 /**
  * Database Migration Script
- * Adds refresh_token and timestamp columns to existing users table
+ * Adds necessary columns to existing users table if they don't exist.
  * 
  * Run this script if you have an existing database:
  * node migrate-db.js
@@ -12,10 +12,21 @@ const path = require("path");
 const dbPath = path.join(__dirname, "users.db");
 const db = new sqlite3.Database(dbPath);
 
+const COLUMNS_TO_ADD = [
+  { name: "refresh_token", type: "TEXT" },
+  { name: "view_history", type: "TEXT DEFAULT '[]'" },
+  { name: "created_at", type: "DATETIME DEFAULT CURRENT_TIMESTAMP" },
+  { name: "updated_at", type: "DATETIME DEFAULT CURRENT_TIMESTAMP" },
+  { name: "password_reset_token", type: "TEXT" },
+  { name: "password_reset_expires", type: "DATETIME" },
+  { name: "preferred_language", type: "TEXT DEFAULT 'en'" },
+  { name: "preferences", type: "TEXT DEFAULT '{}'" }
+];
+
 console.log("🔄 Starting database migration...\n");
 
 db.serialize(() => {
-  // Create search_history table
+  // 1. Create auxiliary tables
   db.run(`CREATE TABLE IF NOT EXISTS search_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
@@ -25,7 +36,6 @@ db.serialize(() => {
     FOREIGN KEY(user_id) REFERENCES users(id)
   )`);
 
-  // Create search_logs table
   db.run(`CREATE TABLE IF NOT EXISTS search_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
@@ -34,136 +44,54 @@ db.serialize(() => {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  // Check if columns already exist
+  // 2. Add columns to users table
   db.all("PRAGMA table_info(users)", (err, columns) => {
     if (err) {
       console.error("❌ Error reading table info:", err);
-      return;
-    }
-
-    const columnNames = columns.map(col => col.name);
-    const hasRefreshToken = columnNames.includes("refresh_token");
-    const hasCreatedAt = columnNames.includes("created_at");
-    const hasUpdatedAt = columnNames.includes("updated_at");
-    const hasViewHistory = columnNames.includes("view_history");
-    const hasResetToken = columnNames.includes("password_reset_token");
-    const hasResetExpires = columnNames.includes("password_reset_expires");
-    const hasPreferredLang = columnNames.includes("preferred_language");
-
-    if (hasRefreshToken && hasCreatedAt && hasUpdatedAt && hasViewHistory && hasResetToken && hasResetExpires && hasPreferredLang) {
-      console.log("✅ Database is already up to date!");
       db.close();
       return;
     }
 
-    console.log("📋 Current columns:", columnNames.join(", "));
-    console.log("\n🔧 Applying migrations...\n");
+    const existingColumnNames = columns.map(col => col.name);
+    let migrationsRun = 0;
 
-    // Add refresh_token column
-    if (!hasRefreshToken) {
-      db.run(
-        "ALTER TABLE users ADD COLUMN refresh_token TEXT",
-        (err) => {
-          if (err) {
-            console.error("❌ Error adding refresh_token column:", err);
-          } else {
-            console.log("✅ Added refresh_token column");
-          }
-        }
-      );
-    }
-
-    // Add view_history column
-    if (!hasViewHistory) {
-      db.run(
-        "ALTER TABLE users ADD COLUMN view_history TEXT DEFAULT '[]'",
-        (err) => {
-          if (err) {
-            console.error("❌ Error adding view_history column:", err);
-          } else {
-            console.log("✅ Added view_history column");
-          }
-        }
-      );
-    }
-
-    // Add created_at column
-    if (!hasCreatedAt) {
-      db.run(
-        "ALTER TABLE users ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP",
-        (err) => {
-          if (err) {
-            console.error("❌ Error adding created_at column:", err);
-          } else {
-            console.log("✅ Added created_at column");
-          }
-        }
-      );
-    }
-
-    // Add updated_at column
-    if (!hasUpdatedAt) {
-      db.run(
-        "ALTER TABLE users ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP",
-        (err) => {
-          if (err) {
-            console.error("❌ Error adding updated_at column:", err);
-          } else {
-            console.log("✅ Added updated_at column");
-          }
-        }
-      );
-    }
-
-    if (!hasResetToken) {
-      db.run(
-        "ALTER TABLE users ADD COLUMN password_reset_token TEXT",
-        (err) => {
-          if (err) {
-            console.error("❌ Error adding password_reset_token:", err);
-          } else {
-            console.log("✅ Added password_reset_token column");
-          }
-        }
-      );
-    }
-
-    if (!hasResetExpires) {
-      db.run(
-        "ALTER TABLE users ADD COLUMN password_reset_expires DATETIME",
-        (err) => {
-          if (err) {
-            console.error("❌ Error adding password_reset_expires column:", err);
-          } else {
-            console.log("✅ Added password_reset_expires column");
-          }
-        }
-      );
-    }
-
-    if (!hasPreferredLang) {
-      db.run(
-        "ALTER TABLE users ADD COLUMN preferred_language TEXT DEFAULT 'en'",
-        (err) => {
-          if (err) {
-            console.error("❌ Error adding preferred_language column:", err);
-          } else {
-            console.log("✅ Added preferred_language column");
-          }
-          // After all migrations, verify the schema
+    const runNextMigration = (index) => {
+      if (index >= COLUMNS_TO_ADD.length) {
+        // All checks done
+        if (migrationsRun === 0) {
+          console.log("✅ Database is already up to date!");
+        } else {
+          // Verify final state
           db.all("PRAGMA table_info(users)", (err, newColumns) => {
-            if (err) console.error("❌ Error verifying migration:", err);
-            else {
-              console.log("\n📋 Updated columns:", newColumns.map(col => col.name).join(", "));
+            if (!err) {
+              console.log("\n📋 Final columns:", newColumns.map(col => col.name).join(", "));
               console.log("\n✅ Migration completed successfully!");
             }
             db.close();
           });
+          return; // Don't close immediately here, closed in callback
         }
-      );
-    } else {
-      // Close if no preferred_language migration needed but we got here
-      db.close();
-    }
+        db.close();
+        return;
+      }
+
+      const col = COLUMNS_TO_ADD[index];
+      if (!existingColumnNames.includes(col.name)) {
+        console.log(`➕ Adding column: ${col.name}...`);
+        db.run(`ALTER TABLE users ADD COLUMN ${col.name} ${col.type}`, (err) => {
+          if (err) {
+            console.error(`❌ Error adding ${col.name}:`, err.message);
+          } else {
+            console.log(`✅ Added ${col.name}`);
+            migrationsRun++;
+          }
+          runNextMigration(index + 1);
+        });
+      } else {
+        runNextMigration(index + 1);
+      }
+    };
+
+    runNextMigration(0);
   });
 });

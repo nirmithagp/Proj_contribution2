@@ -28,7 +28,7 @@ const shapes = {
 
 // Initialize the 3D scene
 function init() {
-   if (_isInitialized) {
+  if (_isInitialized) {
     console.warn("init() already called; skipping reinitialization.");
     return;
   }
@@ -47,17 +47,17 @@ function init() {
     console.error("Three.js is not loaded; cannot initialize 3D scene.");
     return;
   }
-  _isInitialized = true;    
+  _isInitialized = true;
   // Create scene
   scene = new THREE.Scene();
-   // Keep scene background transparent so the site stays white
-   // renderer will composite over the white page background
-   
-   // Create camera
-   const aspectRatio = container.clientWidth / container.clientHeight;
-   camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1000);
-   camera.position.set(5, 5, 5);
-   
+  // Keep scene background transparent so the site stays white
+  // renderer will composite over the white page background
+
+  // Create camera
+  const aspectRatio = container.clientWidth / container.clientHeight;
+  camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1000);
+  camera.position.set(5, 5, 5);
+
   // Create renderer
   renderer = new THREE.WebGLRenderer({
     canvas,
@@ -74,34 +74,34 @@ function init() {
   setupLighting();
   // Setup controls
   setupControls();
-    
+
   // Load model: allow page to specify a different model via data-model
   const modelPath = canvas && canvas.dataset.model ? canvas.dataset.model : 'assets/models/prism.glb';
   loadGltfFromUrl(modelPath, undefined, () => {
-  console.warn('Falling back to primitive shape because prism.glb failed to load.');
-  safeCreatePrimitiveFallback();
+    console.warn('Falling back to primitive shape because prism.glb failed to load.');
+    safeCreatePrimitiveFallback();
   });
-    
+
   // Setup event listeners & interactive effects
-  setupEventListeners();    
+  setupEventListeners();
   addInteractiveEffects();
   // Hide loading screen
   // and announce completion
   setTimeout(() => {
-      const loader = document.getElementById("loading-screen");
-      if (loader) loader.classList.add("hidden");
+    const loader = document.getElementById("loading-screen");
+    if (loader) loader.classList.add("hidden");
 
-      // Screen reader announcement
-     const doneMsg = document.createElement("div");
-     doneMsg.setAttribute("role", "status");
-     doneMsg.setAttribute("aria-live", "polite");
-     doneMsg.classList.add("sr-only");
-     doneMsg.textContent = "XAYTHEON has finished loading.";
-     document.body.appendChild(doneMsg);
-   }, 1000);
-    
-   // Start animation loop
-   startAnimation();
+    // Screen reader announcement
+    const doneMsg = document.createElement("div");
+    doneMsg.setAttribute("role", "status");
+    doneMsg.setAttribute("aria-live", "polite");
+    doneMsg.classList.add("sr-only");
+    doneMsg.textContent = "XAYTHEON has finished loading.";
+    document.body.appendChild(doneMsg);
+  }, 1000);
+
+  // Start animation loop
+  startAnimation();
 }
 
 function disposeScene() {
@@ -142,15 +142,15 @@ function disposeScene() {
     currentModel = null;
   }
 
-if (scene) {
-  const lightsToRemove = [];
-  scene.traverse(obj => {
-    if (obj.isLight) {
-      lightsToRemove.push(obj);
-    }
-  });
-  lightsToRemove.forEach(light => scene.remove(light));
-}
+  if (scene) {
+    const lightsToRemove = [];
+    scene.traverse(obj => {
+      if (obj.isLight) {
+        lightsToRemove.push(obj);
+      }
+    });
+    lightsToRemove.forEach(light => scene.remove(light));
+  }
 
   // Dispose renderer
   try {
@@ -167,13 +167,13 @@ if (scene) {
   }
 
   if (window.__interactiveCleanup) {
-  window.__interactiveCleanup();
-  window.__interactiveCleanup = null;
-}
+    window.__interactiveCleanup();
+    window.__interactiveCleanup = null;
+  }
   // Clear controls
-if (controls && typeof controls.dispose === "function") {
-  controls.dispose();
-}
+  if (controls && typeof controls.dispose === "function") {
+    controls.dispose();
+  }
   controls = null;
   scene = null;
   camera = null;
@@ -243,7 +243,7 @@ function createShape(shapeType) {
     try {
       scene.remove(currentModel);
       disposeObject(currentModel);
-    } catch (e) {}
+    } catch (e) { }
     currentModel = null;
   }
 
@@ -282,7 +282,7 @@ function createShape(shapeType) {
 
 // Setup event listeners
 function setupEventListeners() {
-    if (_listenersAttached) return;
+  if (_listenersAttached) return;
   _listenersAttached = true;
 
   // UI controls: guard each element's existence
@@ -404,7 +404,7 @@ function handleModelUpload(event) {
 
 function loadGltfFromUrl(url, onDone, onError) {
   showLoading(true, "Loading Model...");
-   if (typeof THREE === "undefined" || !THREE.GLTFLoader) {
+  if (typeof THREE === "undefined" || !THREE.GLTFLoader) {
     const err = new Error("GLTFLoader unavailable");
     console.warn(err);
     showLoading(false);
@@ -646,7 +646,7 @@ function addInteractiveEffects() {
             canvas.style.cursor = "default";
             lastCursorState = "default";
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   };
@@ -685,7 +685,7 @@ function addInteractiveEffects() {
       canvas.removeEventListener("click", onDomClick);
       window.removeEventListener("mousemove", onWindowMouseMove);
       window.removeEventListener("scroll", setOpacityByScroll);
-    } catch (e) {}
+    } catch (e) { }
     delete window.__processRaycast;
     delete window.__interactiveCleanup;
     _interactiveAttached = false;
@@ -710,9 +710,123 @@ document.addEventListener("DOMContentLoaded", () => {
   initMiniViewer();
   // Delay recommendations to allow auth setup
   setTimeout(initRecommendations, 1500);
+
+  // Listen for auth changes to apply preferences
+  window.addEventListener("xaytheon:authchange", async (e) => {
+    const user = e.detail.user;
+    if (user) {
+      // User logged in, fetch prefs
+      const prefs = await window.XAYTHEON_AUTH.fetchPreferences();
+      if (prefs && prefs.theme) {
+        setTheme(prefs.theme);
+        localStorage.setItem("xaytheon:theme", prefs.theme);
+      }
+    }
+  });
 });
 
 
+// ===================== DARK MODE / THEME MANAGEMENT =====================
+function initTheme() {
+  const savedTheme = localStorage.getItem("xaytheon:theme");
+  if (savedTheme) {
+    setTheme(savedTheme);
+  } else {
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  }
+
+  if (window.matchMedia) {
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        if (!localStorage.getItem("xaytheon:theme")) {
+          setTheme(e.matches ? "dark" : "light");
+        }
+      });
+  }
+
+  const toggleBtn = document.getElementById("theme-toggle");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", toggleTheme);
+  }
+}
+
+function toggleTheme() {
+  const currentTheme =
+    document.documentElement.getAttribute("data-theme") || "light";
+  const newTheme = currentTheme === "light" ? "dark" : "light";
+  setTheme(newTheme);
+  saveTheme(newTheme);
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+
+  const themeIcon = document.querySelector(".theme-icon");
+  if (themeIcon) {
+    // Set common SVG attributes
+    themeIcon.setAttribute("fill", "none");
+    themeIcon.setAttribute("stroke", "currentColor");
+    themeIcon.setAttribute("stroke-width", "2");
+    themeIcon.setAttribute("stroke-linecap", "round");
+    themeIcon.setAttribute("stroke-linejoin", "round");
+
+    if (theme === "dark") {
+      // Moon icon
+      themeIcon.innerHTML = `
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            `;
+    } else {
+      // Sun icon
+      themeIcon.innerHTML = `
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            `;
+    }
+  }
+  updateCanvasForTheme(theme);
+}
+
+/**
+ * Save theme preference to localStorage
+ * @param {string} theme - 'light' or 'dark'
+ * 
+ */
+function saveTheme(theme) {
+  try {
+    localStorage.setItem("xaytheon:theme", theme);
+
+    // Sync with backend if logged in
+    if (window.XAYTHEON_AUTH && window.XAYTHEON_AUTH.isAuthenticated()) {
+      window.XAYTHEON_AUTH.savePreferences({ theme });
+    }
+  } catch (e) {
+    console.warn("Could not save theme:", e);
+  }
+}
+
+/**
+ * Update 3D canvas opacity based on theme
+ * @param {string} theme - 'light' or 'dark'
+ */
+function updateCanvasForTheme(theme) {
+  const canvas = document.getElementById("three-canvas");
+  if (!canvas) return;
+}
 
 // -----------------------------
 // Developer console instructions
@@ -757,7 +871,7 @@ const HISTORY_MANAGER = {
     };
 
     history.unshift(snapshot);
-    
+
     if (history.length > this.maxSnapshots) {
       history.splice(this.maxSnapshots);
     }
@@ -852,23 +966,23 @@ function setDashboardState(state, message = "") {
 function clearDashboardUI() {
   const avatar = document.getElementById("gh-avatar");
   if (avatar) avatar.src = "";
-  
+
   ["gh-name", "gh-login", "gh-bio"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = "";
   });
-  
+
   ["gh-followers", "gh-following", "gh-repos-count"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = "0";
   });
-  
+
   const repoList = document.getElementById("gh-repo-list");
   if (repoList) repoList.innerHTML = '<div class="muted">Load a dashboard to see repositories</div>';
-  
+
   const activityList = document.getElementById("gh-activity-list");
   if (activityList) activityList.innerHTML = '<li class="activity-item muted">Load a dashboard to see activity</li>';
-  
+
   const contribSvg = document.getElementById("gh-contrib-svg");
   if (contribSvg) contribSvg.innerHTML = '<div class="muted">Load a dashboard to see contributions</div>';
 }
@@ -916,7 +1030,7 @@ function initGithubDashboard() {
     localStorage.removeItem("xaytheon:ghCreds");
     GITHUB_CACHE.clear();
     usernameInput.value = "";
-    
+
     // Clear the UI display but don't delete history data
     clearDashboardUI();
     setDashboardState("idle", "Cache cleared. History preserved.");
@@ -928,7 +1042,7 @@ function initGithubDashboard() {
   // Clear History button - only clears snapshots, not cache
   document.getElementById("clear-history").addEventListener("click", () => {
     const username = usernameInput.value.trim();
-    
+
     if (!username) {
       // If no username in input, ask user to confirm clearing ALL history
       if (confirm("Clear history for ALL users? This cannot be undone.")) {
@@ -1031,7 +1145,7 @@ async function fetchAndCacheDashboard(username) {
 
     const data = { user, repos: topRepos, events: events.slice(0, 10) };
     GITHUB_CACHE.set(`dashboard:${username}`, data);
-    
+
     // Save metrics snapshot during background refresh
     const metrics = {
       followers: user.followers,
@@ -1040,7 +1154,7 @@ async function fetchAndCacheDashboard(username) {
       stars: topRepos.reduce((sum, r) => sum + r.stargazers_count, 0)
     };
     HISTORY_MANAGER.saveSnapshot(username, metrics);
-    
+
     // Update visualization if this is the current user
     const currentUsername = document.getElementById("gh-username")?.value.trim();
     if (currentUsername === username) {
@@ -1082,7 +1196,7 @@ function renderMetricsTrends(current, previous) {
     const currentVal = current[metric.key] || 0;
     const previousVal = previous ? (previous[metric.key] || 0) : currentVal;
     const change = currentVal - previousVal;
-    
+
     let trendClass = "neutral";
     let trendIcon = "—";
     let trendText = "No change";
@@ -1178,7 +1292,7 @@ function renderHistoryChart(history) {
       },
       scales: {
         x: {
-          ticks: { 
+          ticks: {
             color: 'rgba(255, 255, 255, 0.6)',
             maxRotation: 45,
             minRotation: 45,
@@ -1233,7 +1347,7 @@ function renderDashboardData(data, username) {
     if (el) el.textContent = val;
   };
   const avatar = document.getElementById("gh-avatar");
-  
+
   // Render user profile
   if (avatar) avatar.src = data.user.avatar_url;
   set("gh-name", data.user.name || "—");
@@ -1242,13 +1356,13 @@ function renderDashboardData(data, username) {
   set("gh-followers", data.user.followers ?? 0);
   set("gh-following", data.user.following ?? 0);
   set("gh-repos-count", (data.user.public_repos ?? data.repos.length) + "");
-  
+
   // Render repos
   renderRepos(data.repos);
-  
+
   // Render activity
   renderActivity(data.events);
-  
+
   // Render contributions chart
   const setDisplay = (id, disp) => {
     const el = document.getElementById(id);
@@ -1256,12 +1370,12 @@ function renderDashboardData(data, username) {
   };
   const contribNote = document.getElementById("gh-contrib-note");
   const container = document.getElementById("gh-contrib-svg");
-  
+
   if (contribNote)
     contribNote.textContent =
       "Full-year chart via third-party (ghchart.rshah.org). If it fails, we will show an approximate heatmap.";
   setDisplay("gh-contrib-note", "block");
-  
+
   if (container) {
     container.innerHTML = '<div class="muted">Loading public contributions…</div>';
     const img = new Image();
@@ -1301,19 +1415,19 @@ async function ghJson(url, headers = {}) {
       ...headers,
     },
   });
-  
+
   // Check for rate limiting
   if (res.status === 403 || res.status === 429) {
     const resetTime = res.headers.get('X-RateLimit-Reset');
     const remaining = res.headers.get('X-RateLimit-Remaining');
-    
+
     if (remaining === '0' || res.status === 429) {
       const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : null;
       const waitTime = resetDate ? Math.ceil((resetDate - Date.now()) / 60000) : 'unknown';
       throw new Error(`⚠️ GitHub API rate limit exceeded. Please try again in ${waitTime} minutes.`);
     }
   }
-  
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`GitHub API ${res.status}: ${text}`);

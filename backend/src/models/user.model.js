@@ -27,7 +27,7 @@ exports.findByEmail = (email) =>
     }
 
     db.get(
-      "SELECT id, email, password, view_history, preferred_language FROM users WHERE email = ?",
+      "SELECT id, email, password, view_history, preferred_language, preferences FROM users WHERE email = ?",
       [email],
       (err, row) => {
         if (err) reject(err);
@@ -48,7 +48,7 @@ exports.findById = (id) =>
     }
 
     db.get(
-      "SELECT id, email, view_history, refresh_token, preferred_language FROM users WHERE id = ?",
+      "SELECT id, email, view_history, refresh_token, preferred_language, preferences FROM users WHERE id = ?",
       [userId],
       (err, row) => {
         if (err) reject(err);
@@ -219,6 +219,30 @@ exports.updatePreferredLanguage = (userId, lang) =>
     db.run(
       "UPDATE users SET preferred_language = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
       [lang, id],
+      function (err) {
+        if (err) reject(err);
+        else resolve(this.changes);
+      }
+    );
+  });
+
+exports.updatePreferences = (userId, preferencesJson) =>
+  new Promise((resolve, reject) => {
+    if (!userId || (typeof userId !== 'number' && typeof userId !== 'string')) {
+      return reject(new Error('Invalid user ID'));
+    }
+    if (preferencesJson && (typeof preferencesJson !== 'string' || preferencesJson.length > 5000)) {
+      return reject(new Error('Invalid preferences data'));
+    }
+
+    const id = typeof userId === 'string' ? parseInt(userId, 10) : userId;
+    if (isNaN(id) || id <= 0) {
+      return reject(new Error('Invalid user ID'));
+    }
+
+    db.run(
+      "UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [preferencesJson, id],
       function (err) {
         if (err) reject(err);
         else resolve(this.changes);
