@@ -4,6 +4,7 @@ const User = require("../models/user.model");
 const crypto = require("crypto");
 const { sendPasswordResetEmail, sendPasswordChangedEmail } = require("../utils/email");
 const { validateEmail, validatePassword, validateString } = require("../utils/validation");
+const { validateEmail, validatePassword, validateString } = require("../utils/validation");
 
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY = "7d";
@@ -46,18 +47,19 @@ exports.register = async (req, res) => {
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
-    console.error("Registration error:", err);
-
     // Handle specific database errors
     if (err.code === 'SQLITE_CONSTRAINT_UNIQUE' || err.message.includes('UNIQUE constraint failed')) {
+      // console.warn("Registration attempt with duplicate email:", email); // Optional debug log
       return res.status(409).json({ message: "An account with this email already exists" });
     }
 
     // Handle validation errors
     if (err.name === 'ValidationError') {
+      // console.warn("Registration validation error:", err.message); // Optional debug log
       return res.status(err.statusCode).json({ message: err.message, field: err.field });
     }
 
+    console.error("Registration error:", err);
     // Generic error response
     res.status(500).json({ message: "Registration failed. Please try again later." });
   }
@@ -71,16 +73,21 @@ exports.login = async (req, res) => {
     const sanitizedEmail = validateEmail(email);
     const sanitizedPassword = validatePassword(password);
 
+    // console.log(`[DEBUG] Login attempt for: ${sanitizedEmail}`);
+
     const user = await User.findByEmail(sanitizedEmail);
     if (!user) {
+      // console.log(`[DEBUG] User not found: ${sanitizedEmail}`);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(sanitizedPassword, user.password);
     if (!isMatch) {
+      // console.log(`[DEBUG] Password mismatch for: ${sanitizedEmail}`);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    // console.log(`[DEBUG] Login successful for: ${sanitizedEmail}`);
     const { accessToken, refreshToken } = generateTokens(user.id);
     await User.updateRefreshToken(user.id, refreshToken);
     res.cookie("refreshToken", refreshToken, getCookieOptions());
@@ -93,13 +100,12 @@ exports.login = async (req, res) => {
       message: "Login successful"
     });
   } catch (err) {
-    console.error("Login error:", err);
-
     // Handle validation errors
     if (err.name === 'ValidationError') {
       return res.status(err.statusCode).json({ message: err.message, field: err.field });
     }
 
+    console.error("Login error:", err);
     res.status(500).json({ message: "Login failed. Please try again later." });
   }
 };
@@ -161,7 +167,7 @@ exports.logout = async (req, res) => {
     res.clearCookie("refreshToken", getCookieOptions());
     res.json({ message: "Logged out successfully" });
   } catch (err) {
-    console.error("Logout error:", err);
+    // console.error("Logout error:", err); // Silent fail for logout
     res.status(500).json({ message: "Logout failed" });
   }
 };
@@ -216,11 +222,11 @@ exports.forgotPassword = async (req, res) => {
       message: "If an account exists with this email, you will receive a password reset link shortly."
     });
   } catch (err) {
-    console.error("Forgot password error:", err);
-
     if (err.name === 'ValidationError') {
       return res.status(err.statusCode).json({ message: err.message, field: err.field });
     }
+
+    console.error("Forgot password error:", err);
 
     res.status(500).json({
       message: "An error occurred. Please try again later."
@@ -278,11 +284,11 @@ exports.resetPassword = async (req, res) => {
       message: "Password reset successfully. You can now log in with your new password."
     });
   } catch (err) {
-    console.error("Reset password error:", err);
-
     if (err.name === 'ValidationError') {
       return res.status(err.statusCode).json({ message: err.message, field: err.field });
     }
+
+    console.error("Reset password error:", err);
 
     res.status(500).json({
       message: "Failed to reset password. Please try again."

@@ -188,7 +188,14 @@ window.XAYTHEON_AUTH = window.XAYTHEON_AUTH || {};
         if (res.status === 409) throw { code: "USER_EXISTS" };
         if (res.status === 429) throw { code: "TOO_MANY_ATTEMPTS" };
         if (res.status >= 500) throw { code: "SERVER_ERROR" };
-        throw { code: "AUTH_FAILED" };
+        
+        // Try to parse detailed error message
+        let errorMessage = "Registration failed";
+        try {
+          const err = await res.json();
+          errorMessage = err.message || errorMessage;
+        } catch { }
+        throw new Error(errorMessage);
       }
 
       return await res.json();

@@ -21,8 +21,8 @@ const aiRoutes = require("./routes/ai.routes");
 const app = express();
 
 const corsOptions = {
-  origin: true, // Allow all origins (simpler for local dev with varying ports)
-  credentials: true,
+  origin: "*", // Allow all origins (required for file:// usage)
+  credentials: false, // Must be false when origin is wildcard
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   exposedHeaders: ["Set-Cookie"],

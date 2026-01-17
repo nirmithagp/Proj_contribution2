@@ -223,51 +223,39 @@
 
 
   <div class="auth-wrap">
-  <div class="auth-card">
-    <div class="auth-title">Sign in</div>
-    <div class="auth-sub">Sign in using your email and password</div>
-    <div id="auth-error" class="auth-error" aria-live="assertive"></div>
+    <div class="auth-card">
+      <div class="auth-title">Sign in</div>
+      <div class="auth-sub">Sign in using your email and password</div>
+      <div id="auth-error" class="auth-error" aria-live="assertive"></div>
 
-    <form id="login-form" class="auth-form" autocomplete="on">
-      <label for="login-email">Email</label>
-      <input
-  id="login-email"
-  name="email"
-  type="email"
-  placeholder="you@example.com"
-  autocomplete="email"
-  required
-/>
+      <form id="login-form" class="auth-form" autocomplete="on">
+        <label for="login-email">Email</label>
+        <input id="login-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
 
 
-      <label for="login-password">Password</label>
-      <div class="password-wrapper">
-        <input
-  id="login-password"
-  name="password"
-  type="password"
-  placeholder="••••••••"
-  autocomplete="current-password"
-  required
-/>
+        <label for="login-password">Password</label>
+        <div class="password-wrapper">
+          <input id="login-password" name="password" type="password" placeholder="••••••••"
+            autocomplete="current-password" required />
 
-        <button
-          type="button"
-          class="toggle-password"
-          aria-label="Show password"
-          aria-pressed="false"
-        >
-          <img
-            id="eye-icon"
-            src="https://img.icons8.com/?size=100&id=59814&format=png&color=000000"
-            alt="Show password"
-          />
-        </button>
-      </div>
+          <button type="button" class="toggle-password" aria-label="Show password" aria-pressed="false">
+            <img id="eye-icon" src="https://img.icons8.com/?size=100&id=59814&format=png&color=000000"
+              alt="Show password" />
+          </button>
+        </div>
 
-      <div class="center muted" style="margin-top:12px;">
-        Authentication is handled securely by the Xaytheon backend.
-      </div>
+        <button type="submit" class="btn"
+          style="width: 100%; margin-top: 24px; background: var(--text-primary); color: var(--bg-primary); font-weight: 600;"
+          id="login-submit-btn">Sign in</button>
+
+        <div class="center" style="margin-top: 20px;">
+          <span class="muted">Don't have an account?</span>
+          <a href="register.html" style="font-weight: 600; margin-left: 5px;">Create account</a>
+        </div>
+
+        <div class="center muted" style="margin-top: 24px; font-size: 0.85em;">
+          Authentication is handled securely by the Xaytheon backend.
+        </div>
     </div>
   </div>
 
@@ -326,12 +314,12 @@
 
   <script src="auth.js"></script>
   <script>
-   
+
     // Login form handling
     const form = document.getElementById("login-form");
     const emailEl = document.getElementById("login-email");
     const passwordEl = document.getElementById("login-password");
-    const statusEl = document.getElementById("login-status");
+    const statusEl = document.getElementById("auth-error");
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalBtnText = submitBtn.textContent;
 
@@ -418,19 +406,19 @@
         setTimeout(() => {
           window.location.href = "index.html";
         }, 100);
-      } 
+      }
       catch (err) {
-  setLoading(false);
+        setLoading(false);
 
-  const message = getAuthErrorMessage(err);
-  showError(message);
+        const message = getAuthErrorMessage(err);
+        showError(message);
 
-  // Highlight fields for credential-related errors
-  if (err.code === "INVALID_CREDENTIALS") {
-    emailEl.classList.add("input-error");
-    passwordEl.classList.add("input-error");
-  }
-}
+        // Highlight fields for credential-related errors
+        if (err.code === "INVALID_CREDENTIALS") {
+          emailEl.classList.add("input-error");
+          passwordEl.classList.add("input-error");
+        }
+      }
 
     });
   </script>
