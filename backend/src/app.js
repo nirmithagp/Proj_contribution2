@@ -28,22 +28,26 @@ const app = express();
 ======================== */
 const corsOptions = {
   origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
 
+    // Allow local development
     if (
       origin.startsWith("http://localhost") ||
-      origin.startsWith("http://127.0.0.1")
+      origin.startsWith("http://127.0.0.1") ||
+      origin.startsWith("file://") // Re-added file support from feature/login logic
     ) {
       return callback(null, true);
     }
 
+    // Allow production frontend
     if (origin === process.env.FRONTEND_URL) {
       return callback(null, true);
     }
 
     callback(new Error("Not allowed by CORS"));
   },
-  credentials: true,
+  credentials: true, // Required for cookies and Authorization headers
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   exposedHeaders: ["Set-Cookie"],

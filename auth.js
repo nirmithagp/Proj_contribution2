@@ -230,23 +230,20 @@
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      if (!res.ok) {
+     if (!res.ok) {
+        // 1. Handle specific HTTP status codes first
+        if (res.status === 409) throw { code: "USER_EXISTS" };
+        if (res.status === 429) throw { code: "TOO_MANY_ATTEMPTS" };
+        if (res.status >= 500) throw { code: "SERVER_ERROR" };
+
+        // 2. If it's not a predefined code, try to parse the server's error message
         let errorMessage = "Registration failed";
         try {
           const err = await res.json();
           errorMessage = err.message || errorMessage;
         } catch {
-          // If we can't parse the error response, use status text
+          // Fallback to status text (e.g., "Not Found") if JSON parsing fails
           errorMessage = res.statusText || errorMessage;
-        }
-
-        // Handle specific HTTP status codes
-        if (res.status === 409) {
-          throw new Error('An account with this email already exists');
-        } else if (res.status === 429) {
-          throw new Error('Too many registration attempts. Please wait before trying again.');
-        } else if (res.status >= 500) {
-          throw new Error('Server error. Please try again later.');
         }
 
         throw new Error(errorMessage);

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,6 +13,7 @@
     body {
       font-family: 'Eightgon', 'Researcher', 'OriginTech', sans-serif;
     }
+
     .auth-wrap {
       min-height: 100vh;
       display: grid;
@@ -19,6 +21,7 @@
       padding: 40px 16px;
       background: var(--bg-primary);
     }
+
     .auth-card {
       width: 100%;
       max-width: 420px;
@@ -28,23 +31,28 @@
       box-shadow: var(--shadow-md);
       padding: 24px;
     }
+
     .auth-title {
       font-size: 1.8em;
       margin-bottom: 8px;
       color: var(--text-primary);
     }
+
     .auth-sub {
       color: var(--text-secondary);
       margin-bottom: 20px;
     }
+
     .auth-form {
       display: grid;
       gap: 12px;
     }
+
     .auth-form label {
       font-weight: 600;
       color: var(--text-primary);
     }
+
     .auth-form input {
       padding: 12px 14px;
       border: 1px solid var(--border-color-strong);
@@ -55,25 +63,31 @@
       color: var(--text-primary);
       transition: border-color 0.3s ease;
     }
+
     .auth-form input:focus {
       border-color: var(--text-primary);
     }
+
     .auth-actions {
       display: flex;
       gap: 10px;
       align-items: center;
     }
+
     .status {
       min-height: 1.2em;
       margin-top: 10px;
     }
+
     .muted {
       color: var(--text-muted);
       font-size: 0.95em;
     }
+
     .center {
       text-align: center;
     }
+
     .theme-toggle-auth {
       position: fixed;
       top: 20px;
@@ -91,14 +105,17 @@
       border-radius: 8px;
       z-index: 100;
     }
+
     .theme-toggle-auth:hover {
       background: var(--border-color);
       transform: scale(1.05);
     }
+
     .theme-toggle-auth:focus {
       outline: 2px solid var(--text-primary);
       outline-offset: 2px;
     }
+
     .theme-toggle-auth svg {
       width: 20px;
       height: 20px;
@@ -106,9 +123,11 @@
       fill: none;
       transition: all 0.3s ease;
     }
+
     .theme-toggle-auth:hover svg {
       transform: rotate(15deg);
     }
+
     .error-msg {
       color: #dc2626;
       background: #fee2e2;
@@ -117,6 +136,7 @@
       font-size: 0.9em;
       margin-top: 10px;
     }
+
     .success-msg {
       color: #059669;
       background: #d1fae5;
@@ -125,24 +145,30 @@
       font-size: 0.9em;
       margin-top: 10px;
     }
+
     .btn-primary:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
+
     .spinner {
       display: inline-block;
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin-right: 6px;
       vertical-align: middle;
     }
+
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
+
     .input-error {
       border-color: #dc2626 !important;
     }
@@ -152,8 +178,8 @@
 <body>
 
   <button class="theme-toggle-auth" id="theme-toggle-auth" aria-label="Toggle dark mode">
-    <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="5" />
       <line x1="12" y1="1" x2="12" y2="3" />
       <line x1="12" y1="21" x2="12" y2="23" />
@@ -174,23 +200,11 @@
 
       <form id="register-form" class="auth-form">
         <label for="reg-email">Email</label>
-      <input
-  id="reg-email"
-  name="email"
-  type="email"
-  autocomplete="email"
-  required
-/>
+        <input id="reg-email" name="email" type="email" autocomplete="email" required />
 
 
         <label for="reg-password">Password</label>
-       <input
-  id="reg-password"
-  name="password"
-  type="password"
-  autocomplete="new-password"
-  required
-/>
+        <input id="reg-password" name="password" type="password" autocomplete="new-password" required />
 
 
         <div class="auth-actions">
@@ -217,7 +231,7 @@
 
   <script src="auth.js"></script>
   <script>
-   
+
 
     // Register form handling
     const form = document.getElementById("register-form");
@@ -234,7 +248,17 @@
     }
 
     function validatePassword(password) {
-      return typeof password === 'string' && password.length >= 8 && password.length <= 128;
+      if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+        return false;
+      }
+
+      // Check for common weak passwords
+      const weakPasswords = ['password', '12345678', 'qwerty', 'abc123'];
+      if (weakPasswords.includes(password.toLowerCase())) {
+        return false;
+      }
+
+      return true;
     }
 
     function showError(message) {
@@ -311,18 +335,19 @@
           window.location.href = "login.html";
         }, 1500);
       } catch (err) {
-  setLoading(false);
+        setLoading(false);
 
-  const message = getAuthErrorMessage(err);
-  showError(message);
+        const message = getAuthErrorMessage(err);
+        showError(message);
 
-  // Highlight field for known registration errors
-  if (err.code === "USER_EXISTS") {
-    emailEl.classList.add("input-error");
-  }
-}
+        // Highlight field for known registration errors
+        if (err.code === "USER_EXISTS") {
+          emailEl.classList.add("input-error");
+        }
+      }
 
     });
   </script>
 </body>
+
 </html>
