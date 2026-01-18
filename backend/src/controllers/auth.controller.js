@@ -4,7 +4,7 @@ const User = require("../models/user.model");
 const crypto = require("crypto");
 const { sendPasswordResetEmail, sendPasswordChangedEmail } = require("../utils/email");
 const { validateEmail, validatePassword, validateString } = require("../utils/validation");
-const { validateEmail, validatePassword, validateString } = require("../utils/validation");
+// const { validateEmail, validatePassword, validateString } = require("../utils/validation");
 
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY = "7d";
