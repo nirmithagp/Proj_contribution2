@@ -9,6 +9,8 @@
     <title>Watchlist — XAYTHEON</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css" />
+     <link rel="stylesheet" href="style.css?v=3">
+
      <script src="theme.js"></script>
     <link rel="stylesheet" href="watchlist.css" />
 
@@ -25,57 +27,7 @@
 <body class="eightgon-page">
     <div class="page-wrapper">
 
-        <nav class="navbar">
-            <div class="nav-container">
-                <a class="logo" href="index.html" aria-label="Back to Home">
-                    <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo" />
-                </a>
-                <ul class="nav-menu">
-                    <li><a class="nav-link" href="index.html#home">Home</a></li>
-                    <li><a class="nav-link" href="github.html">GitHub Dashboard</a></li>
-                    <li><a class="nav-link" href="risk-detector.html">Risk Detector</a></li>
-                    <li><a class="nav-link" href="analytics.html">Analytics</a></li>
-                    <li><a class="nav-link" href="heatmap.html">Activity Map</a></li>
-                    <li><a class="nav-link" href="sentiment.html">Sentiment</a></li>
-                    <li><a class="nav-link" href="workflow-builder.html">Workflow Builder</a></li>
-                    <li><a class="nav-link" href="compare.html">Compare</a></li>
-                    <li><a class="nav-link" href="achievements.html">Achievements</a></li>
-                    <li><a class="nav-link" href="community.html" data-i18n="nav.community">Community Highlights</a>
-                    </li>
-                    <li><a class="nav-link" href="health.html">Health Auditor</a></li>
-                    <li><a class="nav-link" href="explore.html" data-i18n="nav.explore">Explore by Topic</a></li>
-                    <li><a class="nav-link" href="contributions.html" data-i18n="nav.contributions">Contributions</a>
-                    </li>
-                    <li>
-                        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-                            <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="5" />
-                                <line x1="12" y1="1" x2="12" y2="3" />
-                                <line x1="12" y1="21" x2="12" y2="23" />
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                                <line x1="1" y1="12" x2="3" y2="12" />
-                                <line x1="21" y1="12" x2="23" y2="12" />
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                            </svg>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="notification-bell" id="notification-bell">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
-                        </button>
-                    </li>
-                    <li id="auth-area"></li>
-                </ul>
-            </div>
-        </nav>
+        <div id="navbar-placeholder"></div>
 
         <main>
             <section id="watchlist" class="watchlist-section">
@@ -356,6 +308,18 @@
     <script src="script.js"></script>
     <!-- Watchlist-specific script -->
     <script src="watchlist.js"></script>
+    <script>
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-placeholder').innerHTML = data;
+
+            // Optional: Re-run JS for menu toggle & theme switch after navbar is loaded
+            if (typeof initNavbar === "function") initNavbar();
+        })
+        .catch(error => console.error('Error loading navbar:', error));
+</script>
+
 </body>
 
 </html>

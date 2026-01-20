@@ -20,27 +20,8 @@
 
 <body class="eightgon-page">
     <div class="content">
-        <nav class="navbar">
-            <div class="nav-container">
-                <a class="logo" href="index.html" aria-label="Back to Home">
-                    <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo" />
-                </a>
-                <ul class="nav-menu">
-                    <li><a class="nav-link" href="index.html#home" data-i18n="nav.home">Home</a></li>
-                    <li><a class="nav-link" href="github.html" data-i18n="nav.dashboard">GitHub Dashboard</a></li>
-                    <li><a class="nav-link" href="analytics.html" data-i18n="nav.analytics">Analytics</a></li>
-                    <li><a class="nav-link" href="community.html" data-i18n="nav.community">Community Highlights</a>
-                    </li>
-                    <li><a class="nav-link" href="explore.html" data-i18n="nav.explore">Explore</a></li>
-                    <li>
-                        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-                            <i class="ri-sun-line theme-icon"></i>
-                        </button>
-                    </li>
-                    <li id="auth-area"></li>
-                </ul>
-            </div>
-        </nav>
+       <div id="navbar-placeholder"></div>
+
 
         <main class="search-page-main">
             <section class="search-hero">
@@ -235,6 +216,18 @@
 
     <script src="search.js"></script>
     <script src="script.js"></script>
+    <script>
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-placeholder').innerHTML = data;
+
+            // Optional: Re-run JS for menu toggle & theme switch after navbar is loaded
+            if (typeof initNavbar === "function") initNavbar();
+        })
+        .catch(error => console.error('Error loading navbar:', error));
+</script>
+
 </body>
 
 </html>

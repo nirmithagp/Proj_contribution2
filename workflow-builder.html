@@ -8,6 +8,7 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="builder.css">
+     <link rel="stylesheet" href="style.css?v=3">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
     <script defer src="auth.js"></script>
@@ -16,29 +17,8 @@
 
 <body class="eightgon-page">
     <div class="page-wrapper">
-        <nav class="navbar">
-            <div class="nav-container">
-                <a class="logo" href="index.html">
-                    <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo">
-                </a>
-                <ul class="nav-menu">
-                    <li><a class="nav-link" href="index.html#home">Home</a></li>
-                    <li><a class="nav-link" href="github.html">Dashboard</a></li>
-                    <li><a class="nav-link" href="risk-detector.html">Risk Detector</a></li>
-                    <li><a class="nav-link" href="ai-chat.html">AI Assistant</a></li>
-                    <li><a class="nav-link active" href="workflow-builder.html">Workflow Builder</a></li>
-                    <li><a class="nav-link" href="compare.html">Compare</a></li>
-                    <li><a class="nav-link" href="sentiment.html">Sentiment</a></li>
-                    <li><a class="nav-link" href="heatmap.html">Heatmap</a></li>
-                    <li id="theme-toggle-li">
-                        <button class="theme-toggle" id="theme-toggle">
-                            <i class="ri-sun-line"></i>
-                        </button>
-                    </li>
-                    <li id="auth-area"></li>
-                </ul>
-            </div>
-        </nav>
+       <div id="navbar-placeholder"></div>
+
 
         <main class="builder-container">
             <header class="builder-header">
@@ -245,6 +225,18 @@
 
     <script src="builder.js"></script>
     <script src="script.js"></script>
+    <script>
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-placeholder').innerHTML = data;
+
+            // Optional: Re-run JS for menu toggle & theme switch after navbar is loaded
+            if (typeof initNavbar === "function") initNavbar();
+        })
+        .catch(error => console.error('Error loading navbar:', error));
+</script>
+
 </body>
 
 </html>
