@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infrastructure Health Monitor — XAYTHEON</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="infra-monitor.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
+    <script defer src="auth.js"></script>
+</head>
+
+<body class="eightgon-page">
+    <div class="page-wrapper">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a class="logo" href="index.html">
+                    <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo">
+                </a>
+                <ul class="nav-menu">
+                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link" href="github.html">Dashboard</a></li>
+                    <li><a class="nav-link active" href="infra-monitor.html">Infra Monitor</a></li>
+                    <li><a class="nav-link" href="pr-review.html">PR Assistant</a></li>
+                    <li><a class="nav-link" href="risk-detector.html">Risk Detector</a></li>
+                    <li><a class="nav-link" href="ai-chat.html">AI Assistant</a></li>
+                    <li id="auth-area"></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="health-container">
+            <header class="health-header">
+                <div>
+                    <h1 class="page-title">Infrastructure Control Room</h1>
+                    <p class="page-subtitle">Real-time CI/CD status and AI-powered infrastructure diagnosis.</p>
+                </div>
+                <div class="live-indicator">
+                    <div class="pulse-dot"></div>
+                    <span>LIVE STREAM</span>
+                </div>
+            </header>
+
+            <!-- Repository Health Cards -->
+            <section class="health-overview">
+                <h3>Global Fleet Health</h3>
+                <div id="repo-fleet" class="fleet-grid">
+                    <!-- Dynamic Health Cards -->
+                    <div class="card skeleton-repo"></div>
+                    <div class="card skeleton-repo"></div>
+                    <div class="card skeleton-repo"></div>
+                </div>
+            </section>
+
+            <div class="control-layout">
+                <!-- Live Build Feed -->
+                <section class="live-feed card">
+                    <div class="section-header">
+                        <h3>Active Pipelines</h3>
+                        <button id="trigger-demo" class="btn btn-outline btn-sm">Simulate Build</button>
+                    </div>
+                    <div id="build-feed" class="feed-container">
+                        <div class="empty-feed">Awaiting incoming build webhooks...</div>
+                    </div>
+                </section>
+
+                <!-- AI Diagnosis Column -->
+                <section class="ai-diagnosis">
+                    <div class="card diagnosis-card">
+                        <div class="card-header">
+                            <h3><i class="ri-magic-line"></i> AI Log Summarizer</h3>
+                        </div>
+                        <div id="diagnosis-content" class="diagnosis-body">
+                            <p class="placeholder-text">When a build fails, I'll automatically analyze the console
+                                output to suggest a fix.</p>
+                        </div>
+                    </div>
+
+                    <div class="card traffic-light-card">
+                        <h3>System Status</h3>
+                        <div class="traffic-light">
+                            <div id="light-red" class="light"></div>
+                            <div id="light-yellow" class="light"></div>
+                            <div id="light-green" class="light active"></div>
+                        </div>
+                        <p id="status-text">All systems operational</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="infra-monitor.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

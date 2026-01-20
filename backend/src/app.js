@@ -20,6 +20,8 @@ const sentimentRoutes = require("./routes/sentiment.routes");
 const workflowRoutes = require("./routes/workflow.routes");
 const dependencyRoutes = require("./routes/dependency.routes");
 const aiRoutes = require("./routes/ai.routes");
+const riskRoutes = require("./routes/risk.routes");
+const analyzerRoutes = require("./routes/analyzer.routes");
 
 const app = express();
 
@@ -28,22 +30,26 @@ const app = express();
 ======================== */
 const corsOptions = {
   origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
 
+    // Allow local development
     if (
       origin.startsWith("http://localhost") ||
-      origin.startsWith("http://127.0.0.1")
+      origin.startsWith("http://127.0.0.1") ||
+      origin.startsWith("file://") // Re-added file support from feature/login logic
     ) {
       return callback(null, true);
     }
 
+    // Allow production frontend
     if (origin === process.env.FRONTEND_URL) {
       return callback(null, true);
     }
 
     callback(new Error("Not allowed by CORS"));
   },
-  credentials: true,
+  credentials: true, // Required for cookies and Authorization headers
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   exposedHeaders: ["Set-Cookie"],
@@ -100,7 +106,10 @@ app.use((req, res, next) => {
 app.use(cors(corsOptions));
 
 /* ========================
-   BODY PARSING
+   BODY PARSING*/
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 /* ========================
@@ -120,7 +129,22 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 
 /* ========================
-   ERROR HANDLING
+   ERROR HANDLING*/
+   
+app.use("/api/watchlists", watchlistRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/achievements", achievementsRoutes);
+app.use("/api/push", pushRoutes);
+app.use("/api/compare", compareRoutes);
+app.use("/api/collab", collabRoutes);
+app.use("/api/heatmap", heatmapRoutes);
+app.use("/api/sentiment", sentimentRoutes);
+app.use("/api/workflow", workflowRoutes);
+app.use("/api/dependency", dependencyRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/risk", riskRoutes);
+app.use("/api/analyzer", analyzerRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Error:", err);

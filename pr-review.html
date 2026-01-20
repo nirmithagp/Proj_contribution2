@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PR Review Assistant — XAYTHEON</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pr-review.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
+    <script defer src="auth.js"></script>
+</head>
+
+<body class="eightgon-page">
+    <div class="page-wrapper">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a class="logo" href="index.html">
+                    <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo">
+                </a>
+                <ul class="nav-menu">
+                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link" href="github.html">Dashboard</a></li>
+                    <li><a class="nav-link active" href="pr-review.html">PR Review</a></li>
+                    <li><a class="nav-link" href="infra-monitor.html">Infra Monitor</a></li>
+                    <li><a class="nav-link" href="health.html">Health Auditor</a></li>
+                    <li><a class="nav-link" href="risk-detector.html">Risk Detector</a></li>
+                    <li id="auth-area"></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="pr-container">
+            <header class="pr-header">
+                <div>
+                    <h1 class="page-title">Intelligent PR Reviewer</h1>
+                    <p class="page-subtitle">Automated code analysis, security scanning, and style guide enforcement.
+                    </p>
+                </div>
+            </header>
+
+            <div class="review-layout">
+                <!-- Input Section -->
+                <section class="input-section card">
+                    <h3>Configure Review</h3>
+                    <div class="form-group">
+                        <label for="repo-name">Repository Name</label>
+                        <input type="text" id="repo-name" placeholder="owner/repo" value="SatyamPandey-07/xaytheon">
+                    </div>
+                    <div class="form-group">
+                        <label for="pr-number">PR Number</label>
+                        <input type="number" id="pr-number" placeholder="e.g. 123">
+                    </div>
+                    <div class="form-group">
+                        <label for="review-template">Review Template</label>
+                        <select id="review-template">
+                            <option value="comprehensive">Comprehensive Review</option>
+                            <option value="security-focused">Security Focused</option>
+                            <option value="performance-focused">Performance Focused</option>
+                            <option value="code-quality">Code Quality</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="confidence-threshold">Confidence Threshold</label>
+                        <select id="confidence-threshold">
+                            <option value="high">High Confidence Only</option>
+                            <option value="medium" selected>Medium & Above</option>
+                            <option value="low">All Suggestions</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pr-diff">Paste Git Diff</label>
+                        <textarea id="pr-diff" rows="10" placeholder="Paste the diff content here..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button id="clear-form" class="btn btn-outline">Clear</button>
+                        <button id="analyze-pr" class="btn btn-primary">Analyze PR</button>
+                    </div>
+                </section>
+
+                <!-- Results Section -->
+                <section id="review-results" class="results-section hidden">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Confidence Score</div>
+                            <div id="confidence-score" class="stat-value">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Issues</div>
+                            <div id="total-issues" class="stat-value">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Severity Level</div>
+                            <div id="severity-level" class="stat-value">--</div>
+                        </div>
+                        <div class="stat-breakdown">
+                            <div class="breakdown-item high"><span id="high-issues">0</span> High</div>
+                            <div class="breakdown-item medium"><span id="medium-issues">0</span> Med</div>
+                            <div class="breakdown-item low"><span id="low-issues">0</span> Low</div>
+                        </div>
+                    </div>
+
+                    <div id="loading-state" class="hidden">
+                        <div class="loader"></div>
+                        <p>Analyzing code structure and security patterns...</p>
+                    </div>
+
+                    <div class="findings-container">
+                        <div class="finding-block">
+                            <h4><i class="ri-bug-line"></i> Issues Detected</h4>
+                            <div id="issues-container"></div>
+                        </div>
+
+                        <div class="finding-block">
+                            <h4><i class="ri-shield-check-line"></i> Security Warnings</h4>
+                            <div id="security-warnings"></div>
+                        </div>
+
+                        <div class="finding-block">
+                            <h4><i class="ri-code-s-slash-line"></i> Code Suggestions</h4>
+                            <div id="code-suggestions"></div>
+                        </div>
+
+                        <div class="finding-block">
+                            <h4><i class="ri-lightbulb-line"></i> General Recommendations</h4>
+                            <div id="recommendations"></div>
+                        </div>
+                    </div>
+
+                    <div class="comment-generator card">
+                        <h4>Generate Review Comment</h4>
+                        <button id="generate-comment" class="btn btn-secondary">Generate Summary</button>
+                        <div class="comment-preview mt-4">
+                            <pre id="review-comment" class="code-block"></pre>
+                        </div>
+                        <button id="copy-comment" class="btn btn-outline mt-2" disabled>Copy to Clipboard</button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="pr-review.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

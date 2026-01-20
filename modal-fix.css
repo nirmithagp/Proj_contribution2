@@ -1,0 +1,20 @@
+/* Fix for modal text visibility - make text black instead of light gray */
+.modal-content h2,
+.modal-content h3,
+.modal-content p,
+.modal-content label,
+.modal-content span {
+    color: #000000 !important;
+}
+
+/* Fix close button visibility */
+.modal-content .close,
+#close-export-modal,
+[id*="close-"] {
+    color: #000000 !important;
+}
+
+/* Ensure all text in modals is visible */
+.modal-content * {
+    color: #000000 !important;
+}

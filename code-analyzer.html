@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Quality Analyzer — XAYTHEON</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="analyzer.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
+    <script defer src="auth.js"></script>
+</head>
+
+<body class="eightgon-page">
+    <div class="page-wrapper">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a class="logo" href="index.html">
+                    <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo">
+                </a>
+                <ul class="nav-menu">
+                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link" href="github.html">Dashboard</a></li>
+                    <li><a class="nav-link active" href="code-analyzer.html">Code Analyzer</a></li>
+                    <li><a class="nav-link" href="pr-review.html">PR Review</a></li>
+                    <li><a class="nav-link" href="risk-detector.html">Risk Detector</a></li>
+                    <li id="auth-area"></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="analyzer-container">
+            <header class="analyzer-header">
+                <div>
+                    <h1 class="page-title">Technical Debt Analyzer</h1>
+                    <p class="page-subtitle">Analyze code complexity, maintainability, and technical debt.</p>
+                </div>
+                <div class="header-actions">
+                    <input type="text" id="repo-input" placeholder="owner/repo" value="SatyamPandey-07/xaytheon">
+                    <button id="analyze-btn" class="btn btn-primary">Analyze</button>
+                </div>
+            </header>
+
+            <!-- Summary Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-files">0</div>
+                    <div class="stat-label">Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-complexity">0</div>
+                    <div class="stat-label">Avg Complexity</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="maintainability">0</div>
+                    <div class="stat-label">Maintainability</div>
+                </div>
+                <div class="stat-card debt">
+                    <div class="stat-value" id="total-debt">0h</div>
+                    <div class="stat-label">Tech Debt</div>
+                </div>
+            </div>
+
+            <div class="analyzer-grid">
+                <!-- Debt Heatmap -->
+                <section class="card heatmap-section">
+                    <h3>📊 Debt Heatmap</h3>
+                    <div id="debt-heatmap" class="heatmap-container"></div>
+                </section>
+
+                <!-- File Analysis Table -->
+                <section class="card files-section">
+                    <h3>📁 File Analysis</h3>
+                    <table class="files-table">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Lines</th>
+                                <th>Complexity</th>
+                                <th>Rating</th>
+                                <th>Debt</th>
+                            </tr>
+                        </thead>
+                        <tbody id="files-table-body"></tbody>
+                    </table>
+                </section>
+
+                <!-- AI Recommendations -->
+                <section class="card recs-section">
+                    <h3>🤖 AI Refactoring Recommendations</h3>
+                    <div id="ai-recs" class="recs-list"></div>
+                </section>
+
+                <!-- Trends -->
+                <section class="card trends-section">
+                    <h3>📈 Debt Trend</h3>
+                    <div id="trend-chart" class="trend-chart"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="analyzer.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
