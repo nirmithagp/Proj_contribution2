@@ -130,6 +130,7 @@ app.use("/api/user", userRoutes);
 
 /* ========================
    ERROR HANDLING*/
+
    
 app.use("/api/watchlists", watchlistRoutes);
 app.use("/api/notifications", notificationRoutes);
