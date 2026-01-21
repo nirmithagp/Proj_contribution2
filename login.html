@@ -7,8 +7,8 @@
   <title>Sign in - XAYTHEON</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="style.css?v=3">
-  <script src="theme.js"></script>
+  <script src="boilerplate/boilerplate-loader.js"></script>
+  
   <script defer src="i18n.js"></script>
 
   <style>
@@ -190,6 +190,7 @@
 <body>
 <div id="navbar-placeholder"></div>
 
+  <div id="header-placeholder"></div>
 
 
   <div class="auth-wrap">
@@ -392,18 +393,11 @@
 
     });
   </script>
-  <script>
-    fetch('navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('navbar-placeholder').innerHTML = data;
+<div id="footer-placeholder"></div>
 
-            // Optional: Re-run JS for menu toggle & theme switch after navbar is loaded
-            if (typeof initNavbar === "function") initNavbar();
-        })
-        .catch(error => console.error('Error loading navbar:', error));
-</script>
-
-</body>
 
 </html>
+
+
+
+

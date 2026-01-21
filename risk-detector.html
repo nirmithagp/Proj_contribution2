@@ -17,8 +17,7 @@
 
 <body class="eightgon-page">
     <div class="page-wrapper">
-       <div id="navbar-placeholder"></div>
-
+        <div id="header-placeholder"></div>
 
         <main class="risk-container">
             <header class="risk-header">
@@ -87,19 +86,12 @@
     </div>
 
     <script src="risk.js"></script>
-    <script>
-    fetch('navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('navbar-placeholder').innerHTML = data;
+    <script src="boilerplate/boilerplate-loader.js"></script>
+    
+<div id="footer-placeholder"></div>
 
-            // Optional: Re-run JS for menu toggle & theme switch after navbar is loaded
-            if (typeof initNavbar === "function") initNavbar();
-        })
-        .catch(error => console.error('Error loading navbar:', error));
-</script>
-
-    <script src="script.js"></script>
-</body>
 
 </html>
+
+
+
