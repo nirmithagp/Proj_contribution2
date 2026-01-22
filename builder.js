@@ -1,7 +1,6 @@
 /**
  * Workflow Builder Logic
  */
-
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('workflow-canvas');
     const placeholder = document.getElementById('canvas-placeholder');
@@ -20,8 +19,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let workflowSteps = [];
     let editingStepId = null;
+    let draggedStepId = null;
 
-    // --- Drag and Drop Logic ---
+    /* -------------------- Utilities -------------------- */
+
+    const debounce = (fn, delay = 400) => {
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), delay);
+        };
+    };
+
+    const debouncedYamlUpdate = debounce(updateYamlPreview);
+
+    /* -------------------- Library Drag -------------------- */
 
     document.querySelectorAll('.draggable-step').forEach(step => {
         step.addEventListener('dragstart', (e) => {
@@ -31,9 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 uses: step.getAttribute('data-uses') || null,
                 run: step.getAttribute('data-run') || null
             };
+            e.dataTransfer.effectAllowed = 'copy';
             e.dataTransfer.setData('application/json', JSON.stringify(data));
         });
     });
+
+    /* -------------------- Canvas Drag -------------------- */
 
     canvas.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -49,32 +64,46 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.classList.remove('drag-over');
 
         try {
-            const stepData = JSON.parse(e.dataTransfer.getData('application/json'));
+            const json = e.dataTransfer.getData('application/json');
+            if (!json) return;
+
+            const stepData = JSON.parse(json);
             addStep(stepData);
         } catch (err) {
             console.error('Drop error:', err);
         }
     });
 
-    // --- Workflow Management ---
+    /* -------------------- Workflow Management -------------------- */
 
-    function addStep(data) {
-        const id = Date.now().toString();
-        workflowSteps.push({ id, ...data });
+    function addStep(data, index = null) {
+        const id = crypto.randomUUID();
+        const step = { id, ...data };
+
+        if (index === null) {
+            workflowSteps.push(step);
+        } else {
+            workflowSteps.splice(index, 0, step);
+        }
+
         renderCanvas();
-        updateYamlPreview();
+        debouncedYamlUpdate();
     }
 
     function removeStep(id) {
         workflowSteps = workflowSteps.filter(s => s.id !== id);
         renderCanvas();
-        updateYamlPreview();
+        debouncedYamlUpdate();
+    }
+
+    function moveStep(fromIndex, toIndex) {
+        if (fromIndex === toIndex) return;
+        const [item] = workflowSteps.splice(fromIndex, 1);
+        workflowSteps.splice(toIndex, 0, item);
     }
 
     function renderCanvas() {
-        // Clear children except placeholder
-        const existingBlocks = canvas.querySelectorAll('.step-block');
-        existingBlocks.forEach(b => b.remove());
+        canvas.querySelectorAll('.step-block').forEach(b => b.remove());
 
         if (workflowSteps.length === 0) {
             placeholder.style.display = 'block';
@@ -86,23 +115,60 @@ document.addEventListener('DOMContentLoaded', () => {
         workflowSteps.forEach((step, index) => {
             const block = document.createElement('div');
             block.className = 'step-block';
+            block.draggable = true;
+            block.dataset.id = step.id;
+            block.dataset.index = index;
+
             block.innerHTML = `
                 <div class="step-info">
                     <h5>${step.name}</h5>
                     <p>${step.uses ? step.uses : step.run}</p>
                 </div>
                 <div class="step-actions">
-                    <button class="icon-btn edit" onclick="window.builder.openEdit('${step.id}')">
+                    <button class="icon-btn edit" type="button">
                         <i class="ri-edit-line"></i>
                     </button>
-                    <button class="icon-btn delete" onclick="window.builder.remove('${step.id}')">
+                    <button class="icon-btn delete" type="button">
                         <i class="ri-delete-bin-line"></i>
                     </button>
                 </div>
             `;
+
+            // Step drag reorder
+            block.addEventListener('dragstart', () => {
+                draggedStepId = step.id;
+                block.classList.add('dragging');
+            });
+
+            block.addEventListener('dragend', () => {
+                draggedStepId = null;
+                block.classList.remove('dragging');
+            });
+
+            block.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const targetIndex = Number(block.dataset.index);
+                const sourceIndex = workflowSteps.findIndex(s => s.id === draggedStepId);
+                if (sourceIndex !== -1 && sourceIndex !== targetIndex) {
+                    moveStep(sourceIndex, targetIndex);
+                    renderCanvas();
+                }
+            });
+
+            // Actions
+            block.querySelector('.edit').addEventListener('click', () => {
+                window.builder.openEdit(step.id);
+            });
+
+            block.querySelector('.delete').addEventListener('click', () => {
+                window.builder.remove(step.id);
+            });
+
             canvas.appendChild(block);
         });
     }
+
+    /* -------------------- YAML Preview -------------------- */
 
     async function updateYamlPreview() {
         const workflowData = {
@@ -111,10 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
             jobs: {
                 build: {
                     runsOn: 'ubuntu-latest',
-                    steps: workflowSteps.map(s => {
-                        const { name, uses, run } = s;
-                        return uses ? { name, uses } : { name, run };
-                    })
+                    steps: workflowSteps.map(({ name, uses, run }) =>
+                        uses ? { name, uses } : { name, run }
+                    )
                 }
             }
         };
@@ -125,13 +190,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ workflowData })
             });
-            const data = await res.json();
 
+            const data = await res.json();
             yamlPreview.textContent = data.yaml;
 
-            if (data.validation === "Workflow is valid.") {
+            if (data.validation === 'Workflow is valid.') {
                 validationPill.className = 'pill valid';
                 validationPill.textContent = 'Valid';
+                validationPill.title = '';
             } else {
                 validationPill.className = 'pill error';
                 validationPill.textContent = 'Warning';
@@ -142,13 +208,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Modal Logic ---
+    /* -------------------- Modal Logic -------------------- */
 
     window.builder = {
-        remove: (id) => removeStep(id),
+        remove: removeStep,
         openEdit: (id) => {
             editingStepId = id;
             const step = workflowSteps.find(s => s.id === id);
+            if (!step) return;
+
             document.getElementById('edit-step-name').value = step.name;
 
             const usesField = document.getElementById('uses-field');
@@ -169,42 +237,46 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     saveEditBtn.addEventListener('click', () => {
-        const name = document.getElementById('edit-step-name').value;
-        const uses = document.getElementById('edit-step-uses').value;
-        const run = document.getElementById('edit-step-run').value;
-
         const idx = workflowSteps.findIndex(s => s.id === editingStepId);
-        if (idx !== -1) {
-            workflowSteps[idx].name = name;
-            if (workflowSteps[idx].uses) workflowSteps[idx].uses = uses;
-            else workflowSteps[idx].run = run;
+        if (idx === -1) return;
+
+        workflowSteps[idx].name = document.getElementById('edit-step-name').value;
+
+        if (workflowSteps[idx].uses) {
+            workflowSteps[idx].uses = document.getElementById('edit-step-uses').value;
+        } else {
+            workflowSteps[idx].run = document.getElementById('edit-step-run').value;
         }
 
         editModal.classList.add('hidden');
         renderCanvas();
-        updateYamlPreview();
+        debouncedYamlUpdate();
     });
 
-    cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+    cancelEditBtn.addEventListener('click', () => {
+        editModal.classList.add('hidden');
+    });
 
-    // --- Actions ---
+    /* -------------------- Actions -------------------- */
 
     exportBtn.addEventListener('click', () => {
-        const yaml = yamlPreview.textContent;
-        const blob = new Blob([yaml], { type: 'text/yaml' });
+        const blob = new Blob([yamlPreview.textContent], { type: 'text/yaml' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = workflowNameInput.value || 'main.yml';
         a.click();
+        URL.revokeObjectURL(url);
     });
 
     copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(yamlPreview.textContent);
         copyBtn.innerHTML = '<i class="ri-check-line"></i>';
-        setTimeout(() => copyBtn.innerHTML = '<i class="ri-file-copy-line"></i>', 2000);
+        setTimeout(() => {
+            copyBtn.innerHTML = '<i class="ri-file-copy-line"></i>';
+        }, 2000);
     });
 
-    workflowNameInput.addEventListener('change', updateYamlPreview);
-    triggerSelect.addEventListener('change', updateYamlPreview);
+    workflowNameInput.addEventListener('change', debouncedYamlUpdate);
+    triggerSelect.addEventListener('change', debouncedYamlUpdate);
 });

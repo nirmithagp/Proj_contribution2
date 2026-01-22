@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Release Notes Generator — XAYTHEON</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="release.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
+    <script defer src="auth.js"></script>
+</head>
+
+<body class="eightgon-page">
+    <div class="page-wrapper">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <a class="logo" href="index.html">
+                    <img class="logo-img" src="assets/logo/thelogo.png" alt="XAYTHEON logo">
+                </a>
+                <ul class="nav-menu">
+                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link" href="github.html">Dashboard</a></li>
+                    <li><a class="nav-link active" href="release-notes.html">Release Notes</a></li>
+                    <li><a class="nav-link" href="code-analyzer.html">Code Analyzer</a></li>
+                    <li><a class="nav-link" href="pr-review.html">PR Assistant</a></li>
+                    <li id="auth-area"></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="release-container">
+            <header class="release-header">
+                <div>
+                    <h1 class="page-title">Automated Release Notes</h1>
+                    <p class="page-subtitle">AI-powered changelog generation from commits and pull requests.</p>
+                </div>
+            </header>
+
+            <div class="generator-layout">
+                <!-- Configuration Sidebar -->
+                <aside class="config-sidebar card">
+                    <h3>Release Config</h3>
+                    <div class="form-group">
+                        <label for="repo-name">Repository</label>
+                        <input type="text" id="repo-name" placeholder="owner/repo" value="SatyamPandey-07/xaytheon">
+                    </div>
+                    <div class="form-group">
+                        <label for="base-tag">Base Tag (from)</label>
+                        <input type="text" id="base-tag" placeholder="v1.0.0" value="v2.1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="head-tag">Head Tag (to)</label>
+                        <input type="text" id="head-tag" placeholder="v1.1.0" value="v2.2.0-rc1">
+                    </div>
+
+                    <div class="config-options">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="include-contributors" checked>
+                            <label for="include-contributors">Include Contributors</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="ai-summarize" checked>
+                            <label for="ai-summarize">AI Summarization</label>
+                        </div>
+                    </div>
+
+                    <button id="generate-btn" class="btn btn-primary full-width">
+                        <i class="ri-magic-line"></i> Generate Notes
+                    </button>
+                </aside>
+
+                <!-- Output Area -->
+                <section class="notes-output">
+                    <div class="output-header">
+                        <div class="tabs">
+                            <button class="tab-btn active" data-tab="preview">Preview</button>
+                            <button class="tab-btn" data-tab="markdown">Markdown</button>
+                            <button class="tab-btn" data-tab="json">JSON</button>
+                        </div>
+                        <div class="output-actions">
+                            <button id="copy-btn" class="btn btn-outline btn-sm"><i class="ri-file-copy-line"></i>
+                                Copy</button>
+                            <button id="publish-btn" class="btn btn-secondary btn-sm" disabled><i
+                                    class="ri-github-fill"></i> Publish to GitHub</button>
+                        </div>
+                    </div>
+
+                    <div id="loading-overlay" class="hidden">
+                        <div class="loader"></div>
+                        <p>Analyzing commits and grouping changes...</p>
+                    </div>
+
+                    <div class="tab-content" id="preview-tab">
+                        <div class="empty-state">
+                            <i class="ri-draft-line"></i>
+                            <p>Configure your release and hit generate to see the notes.</p>
+                        </div>
+                        <div id="preview-area" class="preview-content card hidden"></div>
+                    </div>
+
+                    <div class="tab-content hidden" id="markdown-tab">
+                        <textarea id="markdown-area" class="code-area"></textarea>
+                    </div>
+
+                    <div class="tab-content hidden" id="json-tab">
+                        <pre id="json-area" class="code-area"></pre>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="release.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

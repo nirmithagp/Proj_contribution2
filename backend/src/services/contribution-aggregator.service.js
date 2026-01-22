@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cacheService = require('./cache.service');
 
 class ContributionAggregatorService {
     constructor() {
@@ -12,58 +13,62 @@ class ContributionAggregatorService {
      * In a real production app, we would sync this via webhooks or background jobs.
      */
     async getContributionData(username) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const cacheKey = `github:contributions:${username}`;
 
-        const today = new Date();
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(today.getFullYear() - 1);
+        return cacheService.getOrSet(cacheKey, async () => {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 500));
 
-        const data = {};
-        let totalContributions = 0;
-        let currentStreak = 0;
-        let maxStreak = 0;
-        let tempStreak = 0;
+            const today = new Date();
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(today.getFullYear() - 1);
 
-        // Iterate day by day
-        for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
-            const dateStr = d.toISOString().split('T')[0];
+            const data = {};
+            let totalContributions = 0;
+            let currentStreak = 0;
+            let maxStreak = 0;
+            let tempStreak = 0;
 
-            // Random generation logic with some "realistic" patterns
-            // More activity on weekdays, less on weekends
-            const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-            const baseChance = isWeekend ? 0.3 : 0.7;
+            // Iterate day by day
+            for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
 
-            let count = 0;
-            if (Math.random() < baseChance) {
-                count = Math.floor(Math.random() * 15); // 0 to 14 contributions
-                if (Math.random() > 0.9) count += 10; // Occasional spikes
+                // Random generation logic with some "realistic" patterns
+                // More activity on weekdays, less on weekends
+                const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+                const baseChance = isWeekend ? 0.3 : 0.7;
+
+                let count = 0;
+                if (Math.random() < baseChance) {
+                    count = Math.floor(Math.random() * 15); // 0 to 14 contributions
+                    if (Math.random() > 0.9) count += 10; // Occasional spikes
+                }
+
+                if (count > 0) {
+                    data[dateStr] = count;
+                    totalContributions += count;
+                    tempStreak++;
+                } else {
+                    if (tempStreak > maxStreak) maxStreak = tempStreak;
+                    tempStreak = 0;
+                }
             }
 
-            if (count > 0) {
-                data[dateStr] = count;
-                totalContributions += count;
-                tempStreak++;
-            } else {
-                if (tempStreak > maxStreak) maxStreak = tempStreak;
-                tempStreak = 0;
-            }
-        }
+            // Check final streak
+            if (tempStreak > maxStreak) maxStreak = tempStreak;
+            currentStreak = tempStreak; // If today has contribs, it's active
 
-        // Check final streak
-        if (tempStreak > maxStreak) maxStreak = tempStreak;
-        currentStreak = tempStreak; // If today has contribs, it's active
-
-        return {
-            contributions: data,
-            stats: {
-                total: totalContributions,
-                maxStreak,
-                currentStreak,
-                startDate: oneYearAgo.toISOString().split('T')[0],
-                endDate: today.toISOString().split('T')[0]
-            }
-        };
+            return {
+                contributions: data,
+                stats: {
+                    total: totalContributions,
+                    maxStreak,
+                    currentStreak,
+                    startDate: oneYearAgo.toISOString().split('T')[0],
+                    endDate: today.toISOString().split('T')[0]
+                }
+            };
+        });
     }
 
     calculateInsights(contributionData) {

@@ -8,7 +8,19 @@ exports.compareRepos = async (req, res) => {
             return res.status(400).json({ message: 'At least one repository is required for comparison' });
         }
 
-        const repoList = repos.split(',').map(r => r.trim()).filter(r => r.length > 0);
+        const parseRepoInput = (input) => {
+            let clean = input.trim();
+            // Remove .git suffix
+            clean = clean.replace(/\.git$/i, '');
+            // Remove URL prefix
+            clean = clean.replace(/^https?:\/\/github\.com\//i, '');
+            // Remove leading/trailing slashes
+            return clean.replace(/^\/+|\/+$/g, '');
+        };
+
+        const repoList = repos.split(',')
+            .map(r => parseRepoInput(r))
+            .filter(r => r.length > 0 && r.split('/').length === 2); // Ensure owner/repo format
 
         if (repoList.length > 3) {
             return res.status(400).json({ message: 'Maximum 3 repositories can be compared at once' });

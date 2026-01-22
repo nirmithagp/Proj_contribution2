@@ -1,24 +1,46 @@
+
+:root {
+    --navbar-height: 64px;
+}
+
+body {
+    padding-top: var(--navbar-height);
+}
+
 .builder-container {
-    max-width: 100%;
-    margin: 30px auto;
-    padding: 0 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 60px 32px 40px;
 }
 
 .builder-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     margin-bottom: 30px;
 }
 
-.builder-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr 350px;
-    gap: 20px;
-    height: 75vh;
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
-/* Step Library Sidebar */
+.page-subtitle {
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-size: 0.95rem;
+}
+
+
+.builder-layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 380px;
+    gap: 20px;
+    height: calc(100vh - var(--navbar-height) - 140px);
+}
+
+
 .step-library {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -30,7 +52,7 @@
 }
 
 .step-library h3 {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     font-size: 1.1rem;
 }
 
@@ -45,10 +67,11 @@
 }
 
 .step-category h4 {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin: 15px 0 10px;
+    margin: 16px 0 10px;
+    letter-spacing: 0.05em;
 }
 
 .draggable-step {
@@ -62,21 +85,32 @@
     align-items: center;
     gap: 10px;
     font-size: 0.9rem;
-    transition: all 0.2s;
+    user-select: none;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
 .draggable-step:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.draggable-step:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 .draggable-step i {
     color: var(--accent-color);
 }
 
-/* Canvas Area */
+
 .canvas-area {
-    background: var(--card-bg);
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.01)
+    );
     border: 1px solid var(--border-color);
     border-radius: 16px;
     display: flex;
@@ -85,7 +119,7 @@
 }
 
 .canvas-toolbar {
-    padding: 15px 20px;
+    padding: 14px 20px;
     background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid var(--border-color);
     display: flex;
@@ -95,7 +129,7 @@
 
 .workflow-meta {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
 #workflow-name {
@@ -105,6 +139,12 @@
     font-weight: 600;
     font-family: inherit;
     border-bottom: 1px dashed var(--text-muted);
+    padding-bottom: 2px;
+}
+
+#workflow-name:focus {
+    outline: none;
+    border-bottom-color: var(--accent-color);
 }
 
 #trigger-select {
@@ -112,15 +152,17 @@
     border: none;
     color: var(--text-muted);
     font-size: 0.85rem;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
 }
 
 .pill {
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 20px;
     font-size: 0.75rem;
-    font-weight: bold;
+    font-weight: 700;
+    min-width: 70px;
+    text-align: center;
 }
 
 .pill.valid {
@@ -141,7 +183,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 16px;
+}
+
+.workflow-canvas.drag-over {
+    background: rgba(99, 102, 241, 0.05);
+    outline: 2px dashed rgba(99, 102, 241, 0.4);
+    outline-offset: -10px;
 }
 
 .canvas-placeholder {
@@ -160,22 +208,30 @@
     opacity: 0.3;
 }
 
-/* Rendered Step Block */
+
 .step-block {
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
     background: rgba(255, 255, 255, 0.04);
     border: 2px solid var(--border-color);
-    border-radius: 12px;
-    padding: 15px;
+    border-radius: 14px;
+    padding: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .step-block:hover {
     border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.step-block.dragging {
+    opacity: 0.6;
+    transform: scale(0.97);
 }
 
 .step-info h5 {
@@ -186,12 +242,20 @@
 .step-info p {
     font-size: 0.75rem;
     color: var(--text-muted);
-    margin: 4px 0 0;
+    margin-top: 4px;
 }
+
+/* Step actions */
 
 .step-actions {
     display: flex;
-    gap: 5px;
+    gap: 6px;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+}
+
+.step-block:hover .step-actions {
+    opacity: 1;
 }
 
 .icon-btn {
@@ -200,27 +264,29 @@
     color: var(--text-muted);
     cursor: pointer;
     font-size: 1.1rem;
-    padding: 4px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .icon-btn:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: white;
+    color: #ffffff;
 }
 
 .icon-btn.delete:hover {
     color: #ef4444;
 }
 
-/* Connector Line */
+/* Connector */
+
 .step-block::after {
     content: '';
     position: absolute;
-    bottom: -17px;
+    bottom: -18px;
     left: 50%;
     width: 2px;
-    height: 15px;
+    height: 16px;
     background: var(--border-color);
 }
 
@@ -228,10 +294,18 @@
     display: none;
 }
 
-/* Code Preview Area */
+/* Insert Indicator */
+
+.step-insert-indicator {
+    width: 100%;
+    max-width: 520px;
+    height: 4px;
+    background: var(--accent-color);
+    border-radius: 2px;
+}
+
 .code-preview-area {
     background: #0d1117;
-    /* GitHub Dark theme */
     border: 1px solid var(--border-color);
     border-radius: 16px;
     display: flex;
@@ -264,13 +338,9 @@
     line-height: 1.5;
 }
 
-/* Modal */
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
@@ -315,4 +385,30 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+}
+
+
+@media (max-width: 1200px) {
+    .builder-layout {
+        grid-template-columns: 260px 1fr;
+    }
+
+    .code-preview-area {
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .builder-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .step-library {
+        order: 2;
+    }
+
+    .canvas-area {
+        order: 1;
+    }
 }

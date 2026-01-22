@@ -41,6 +41,11 @@ class LlmService {
     getMockSummary() {
         return "XAYTHEON is a high-performance GitHub analytics and collaboration platform. It features real-time shared workspaces, 3D dependency visualizations, and detailed activity heatmaps. The codebase is built with Node.js on the backend and modern vanilla JS/CSS on the frontend, integrating seamlessly with Supabase for authentication.";
     }
+
+    async generateReleaseSummary(repo, data) {
+        // In real implementation, this would call actual AI API
+        return `This release of ${repo} focuses on enhancing the core infrastructure and improving user experience across key dashboards. Major highlights include the introduction of the Release Notes Generator and significant improvements to the 3D dependency visualization engine.`;
+    }
 }
 
 module.exports = new LlmService();

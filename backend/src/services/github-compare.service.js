@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cacheService = require('./cache.service');
 
 class GitHubCompareService {
     constructor() {
@@ -7,44 +8,57 @@ class GitHubCompareService {
     }
 
     async getRepoData(repoPath) {
-        try {
-            const headers = this.token ? { Authorization: `token ${this.token}` } : {};
+        const cacheKey = `github:repo:${repoPath}`;
 
-            const [repoRes, languagesRes, contributorsRes] = await Promise.all([
-                axios.get(`${this.baseUrl}/repos/${repoPath}`, { headers }),
-                axios.get(`${this.baseUrl}/repos/${repoPath}/languages`, { headers }),
-                axios.get(`${this.baseUrl}/repos/${repoPath}/contributors?per_page=1`, { headers })
-            ]);
+        return cacheService.getOrSet(cacheKey, async () => {
+            try {
+                const headers = this.token ? { Authorization: `token ${this.token}` } : {};
 
-            // Note: Getting actual stats over time (like stars history) requires a lot of calls 
-            // or using specialized APIs. For this implementation, we'll provide the current snapshots 
-            // and some derived health metrics.
+                const [repoRes, languagesRes, contributorsRes] = await Promise.all([
+                    axios.get(`${this.baseUrl}/repos/${repoPath}`, { headers }),
+                    axios.get(`${this.baseUrl}/repos/${repoPath}/languages`, { headers }),
+                    axios.get(`${this.baseUrl}/repos/${repoPath}/contributors?per_page=1`, { headers })
+                ]);
 
-            return {
-                name: repoRes.data.name,
-                fullName: repoRes.data.full_name,
-                description: repoRes.data.description,
-                stars: repoRes.data.stargazers_count,
-                forks: repoRes.data.forks_count,
-                openIssues: repoRes.data.open_issues_count,
-                watchers: repoRes.data.subscribers_count,
-                language: repoRes.data.language,
-                languages: languagesRes.data,
-                license: repoRes.data.license ? repoRes.data.license.spdx_id : 'N/A',
-                createdAt: repoRes.data.created_at,
-                updatedAt: repoRes.data.updated_at,
-                pushedAt: repoRes.data.pushed_at,
-                size: repoRes.data.size,
-                owner: {
-                    login: repoRes.data.owner.login,
-                    avatarUrl: repoRes.data.owner.avatar_url,
-                    htmlUrl: repoRes.data.owner.html_url
+                // Note: Getting actual stats over time (like stars history) requires a lot of calls 
+                // or using specialized APIs. For this implementation, we'll provide the current snapshots 
+                // and some derived health metrics.
+
+                return {
+                    name: repoRes.data.name,
+                    fullName: repoRes.data.full_name,
+                    description: repoRes.data.description,
+                    stars: repoRes.data.stargazers_count,
+                    forks: repoRes.data.forks_count,
+                    openIssues: repoRes.data.open_issues_count,
+                    watchers: repoRes.data.subscribers_count,
+                    language: repoRes.data.language,
+                    languages: languagesRes.data,
+                    license: repoRes.data.license ? repoRes.data.license.spdx_id : 'N/A',
+                    createdAt: repoRes.data.created_at,
+                    updatedAt: repoRes.data.updated_at,
+                    pushedAt: repoRes.data.pushed_at,
+                    size: repoRes.data.size,
+                    owner: {
+                        login: repoRes.data.owner.login,
+                        avatarUrl: repoRes.data.owner.avatar_url,
+                        htmlUrl: repoRes.data.owner.html_url
+                    }
+                };
+            } catch (error) {
+                console.error(`Error fetching repo data for ${repoPath}:`, error.message);
+
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        throw new Error(`GitHub API Rate Limit Exceeded. Please try again later or add a GITHUB_TOKEN.`);
+                    }
+                    if (error.response.status === 404) {
+                        throw new Error(`Repository not found: ${repoPath}`);
+                    }
                 }
-            };
-        } catch (error) {
-            console.error(`Error fetching repo data for ${repoPath}:`, error.message);
-            throw new Error(`Repository not found: ${repoPath}`);
-        }
+                throw new Error(`Failed to fetch repo data: ${error.message}`);
+            }
+        });
     }
 
     async compareRepositories(repoPaths) {

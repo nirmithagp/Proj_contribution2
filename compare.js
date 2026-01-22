@@ -41,7 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoading(true);
             showStatus('Analyzing repositories...', 'info');
 
-            const response = await fetch(`${window.location.origin}/api/compare?repos=${repos.join(',')}`);
+            const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? 'http://localhost:5000'
+                : window.location.origin;
+            const response = await fetch(`${API_BASE}/api/compare?repos=${repos.join(',')}`);
             const data = await response.json();
 
             if (!response.ok) throw new Error(data.message || 'Failed to fetch comparison data');
